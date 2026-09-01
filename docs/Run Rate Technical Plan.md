@@ -2,82 +2,134 @@
 
 **Tagline:** Freelancer Pricing & Runway Tool
 
-## 1. Frontend — Next.js
+## 1. Product Flow
 
-Next.js will power the RunRate interface and user experience.
+The main user journey is:
 
-It will handle:
-- Account and login screens.
-- Freelancer category and currency selection.
-- Financial information forms.
-- Runway display.
-- Job details form.
-- Market-rate inputs.
-- Rate comparison.
-- Minimum and suggested rate displays.
-- Runway impact displays.
-
-## 2. Backend / Application Logic — Next.js
-
-Next.js will handle the application logic required for RunRate, including:
-- Runway calculations.
-- Pricing scenario calculations.
-- Minimum-rate calculation.
-- Suggested-rate calculation.
-- Income-assumption logic.
-- Currency-aware calculations.
-- Built-in market-rate estimates.
-
-## 3. Database — Supabase
-
-Supabase will store the information that needs to persist for each freelancer, including:
-- Freelancer profile/category.
-- Currency preference.
-- Monthly expenses.
-- Current savings.
-- Average income.
-- Other approved RunRate data required for persistence.
-
-## 4. Authentication — Supabase Auth
-
-Supabase Auth is required for V1.
-
-It will handle:
-- Account creation/sign-up.
-- Login.
-- User identity.
-- Secure access to each freelancer's saved information.
-
-Authentication ensures that a freelancer can leave RunRate and return later without entering their financial information again.
-
-## 5. Version Control — GitHub
-
-GitHub will:
-- Store the RunRate code.
-- Track project changes.
-- Provide version history.
-- Allow us to recover earlier versions when necessary.
-
-## 6. Hosting — Vercel
-
-Vercel will host the RunRate web application and make it accessible online.
-
-## How the Tools Work Together
-
-Freelancer
+Homepage
 ↓
-Next.js — RunRate interface
+Sign Up / Log In
 ↓
-Supabase Auth — identifies the freelancer
-↓
-Supabase Database — stores their information
-↓
-Next.js — runs pricing and runway logic
-↓
-Vercel — hosts the live application
-↓
-GitHub — stores and tracks the project
+Dashboard
 
-## Technical Principle
+The homepage is the first page a visitor sees.
 
-We will introduce technical pieces only when the V1 journey requires them. We will not add unnecessary technology or features beyond the approved RunRate V1 scope.
+Get Started and Log In should take the user to the authentication experience.
+
+After successful authentication, the user enters the RunRate dashboard.
+
+## 2. Homepage
+
+The homepage should be a professional, polished SaaS landing page.
+
+It should communicate:
+- What RunRate does
+- Who it is for
+- The value of pricing with financial runway in mind
+- Key product benefits
+- How RunRate works
+- A clear call to action
+
+The homepage should use the approved RunRate visual direction:
+- Black/dark background
+- Gold as the primary accent
+- White/light primary text
+- Muted secondary text
+- Subtle dark surfaces and borders
+- Clean professional typography
+- Consistent buttons, cards and icons
+- Responsive layout for mobile and desktop
+
+Primary homepage actions:
+- Get Started Free
+- Log In
+- See How It Works
+
+## 3. Authentication
+
+The authentication experience contains:
+- Sign Up
+- Log In
+
+Authentication pages should be clean and focused.
+
+They should NOT repeat the full explanation of what RunRate is.
+
+Sign Up should collect the information required to create an account.
+
+Log In should allow an existing user to access their account.
+
+## 4. Dashboard
+
+The dashboard is the main application experience after authentication.
+
+It will eventually contain:
+- Current runway
+- Monthly expenses
+- Monthly savings
+- Suggested rate
+- Runway projection
+- Rate comparison
+- Recent projects
+- Expense information
+- Pricing calculator
+
+## 5. V1 User Profile Flow
+
+After account creation, the freelancer provides:
+
+Sign up / Log in
+↓
+Freelancer category
+↓
+Currency (NGN / USD)
+↓
+Monthly expenses
+↓
+Current savings
+↓
+Average income
+↓
+Save profile
+
+## 6. V1 Currencies
+
+RunRate supports:
+- Nigerian Naira (NGN / ₦)
+- United States Dollar (USD / $)
+
+## 7. Target Users
+
+RunRate is designed for independent professionals including:
+- Writers
+- Designers
+- Developers
+- Photographers
+- Consultants
+- Content creators
+- Translators
+- Illustrators
+- Virtual assistants
+- Social media managers
+- Other freelancers
+
+## 8. Main Product Job
+
+RunRate helps freelancers compare different prices for a job and understand how each price affects their financial runway, so they can confidently decide what to charge.
+
+## 9. Not Now
+
+The Not Now list remains unchanged.
+
+No new features should be introduced outside the approved V1 scope.
+
+## 10. Development Sequence
+
+1. Project scaffold
+2. Homepage
+3. Authentication
+4. Dashboard
+5. Financial profile flow
+6. Pricing and runway calculations
+7. Rate comparison and supporting functionality
+
