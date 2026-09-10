@@ -4,13 +4,23 @@ import { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"
 import { signInWithGoogle } from "../../lib/supabase/auth";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
 
-  function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    router.push("/onboarding");
+    const supabase = createClient();
+    const form = event.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { alert(error.message); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user == null) return;
+    const { data: profile } = await supabase.from("profiles").select("id").eq("id", user.id).maybeSingle();
+    router.push(profile ? "/dashboard" : "/onboarding");
   }
 
   async function handleGoogle() {
@@ -52,7 +62,7 @@ export default function LoginPage() {
               </label>
 
               <input
-                type="email"
+                type="email" name="email"
                 required
                 placeholder="you@example.com"
                 className="w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]"
@@ -72,7 +82,7 @@ export default function LoginPage() {
               </div>
 
               <input
-                type="password"
+                type="password" name="password"
                 required
                 placeholder="Enter your password"
                 className="w-full rounded-lg border border-white/10 bg-[#111111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]"

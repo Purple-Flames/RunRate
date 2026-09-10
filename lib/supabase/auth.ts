@@ -6,7 +6,7 @@ export async function signInWithGoogle() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `https://crispy-giggle-wvgg9r47677725gxg-3000.app.github.dev/auth/callback`,
     },
   })
 

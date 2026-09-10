@@ -1,8 +1,11 @@
 "use client"
+import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 
 import { useState } from "react"
 
 export default function OnboardingPage() {
+  const router = useRouter()
   const [category, setCategory] = useState("")
   const [currency, setCurrency] = useState("NGN")
   const [expenses, setExpenses] = useState("")
@@ -53,7 +56,7 @@ export default function OnboardingPage() {
           <input value={income} onChange={(e) => setIncome(e.target.value)} type="number" placeholder="Enter your average monthly income" className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white placeholder:text-[#777]" />
         </div>
         <div className="mt-10 flex w-full justify-end">
-          <button type="button" className="h-14 w-full rounded-xl bg-[#D4AF37] px-8 text-base font-bold text-black sm:w-auto">Save Profile</button>
+          <button type="button" onClick={async () => { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user === null) { alert("Please log in again."); return; } const { error } = await supabase.from("profiles").upsert({ id: user.id, category, currency, expenses: Number(expenses), savings: Number(savings), income: Number(income) }); if (error) { alert(error.message); return; } router.push("/dashboard"); }} className="h-14 w-full rounded-xl bg-[#D4AF37] px-8 text-base font-bold text-black sm:w-auto">Save Profile</button>
         </div>
       </section>
     </main>
