@@ -2,15 +2,35 @@
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const [category, setCategory] = useState("")
+  const [categories, setCategories] = useState<string[]>([])
+  const [customCategory, setCustomCategory] = useState("")
   const [currency, setCurrency] = useState("NGN")
   const [expenses, setExpenses] = useState("")
   const [savings, setSavings] = useState("")
   const [income, setIncome] = useState("")
+  const [editing, setEditing] = useState(false)
+
+  useEffect(() => {
+    async function loadProfile() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user == null) return
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
+      if (data) {
+        setCategories(Array.isArray(data.category) ? data.category : [data.category])
+        setCurrency(data.currency)
+        setExpenses(String(data.expenses))
+        setSavings(String(data.savings))
+        setIncome(String(data.income))
+        setEditing(true)
+      }
+    }
+    loadProfile()
+  }, [])
 
   return (
     <main className="min-h-screen w-full bg-[#050505] text-white">
@@ -23,16 +43,18 @@ export default function OnboardingPage() {
         <div className="mt-10 grid w-full gap-8 lg:grid-cols-2">
           <div>
             <label className="block text-sm font-bold">Freelancer Category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white">
-              <option value="">Select your category</option>
-              <option value="designer">Designer</option>
-              <option value="developer">Developer</option>
-              <option value="writer">Writer</option>
-              <option value="marketer">Marketer</option>
-              <option value="consultant">Consultant</option>
-              <option value="other">Other</option>
-            </select>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              
+              
+              
+              
+              
+              
+              
+            {["Designer", "Developer", "Writer", "Marketer", "Consultant"].map((item) => (<label key={item} className="flex items-center gap-3 rounded-xl border border-[#333] bg-[#111] px-4 py-4 text-base text-white"><input type="checkbox" checked={categories.includes(item)} onChange={(e) => setCategories(e.target.checked ? [...categories, item] : categories.filter((value) => value !== item))} className="h-5 w-5 accent-[#D4AF37]" />{item}</label>))}</div>
           </div>
+          <div className="mt-4 flex gap-3"><input value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} placeholder="Add another category" className="h-12 flex-1 rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white" /><button type="button" onClick={() => { const value = customCategory.trim(); if (value && categories.includes(value) === false) { setCategories([...categories, value]); setCustomCategory("") } }} className="rounded-xl border border-[#D4AF37] px-5 text-sm font-semibold text-[#D4AF37]">Add</button></div>
+
           <div>
             <label className="block text-sm font-bold">Currency</label>
             <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white">
@@ -56,7 +78,7 @@ export default function OnboardingPage() {
           <input value={income} onChange={(e) => setIncome(e.target.value)} type="number" placeholder="Enter your average monthly income" className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white placeholder:text-[#777]" />
         </div>
         <div className="mt-10 flex w-full justify-end">
-          <button type="button" onClick={async () => { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user === null) { alert("Please log in again."); return; } const { error } = await supabase.from("profiles").upsert({ id: user.id, category, currency, expenses: Number(expenses), savings: Number(savings), income: Number(income) }); if (error) { alert(error.message); return; } router.push("/dashboard"); }} className="h-14 w-full rounded-xl bg-[#D4AF37] px-8 text-base font-bold text-black sm:w-auto">Save Profile</button>
+          <button type="button" onClick={async () => { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user === null) { alert("Please log in again."); return; } const { error } = await supabase.from("profiles").upsert({ id: user.id, category: categories, currency, expenses: Number(expenses), savings: Number(savings), income: Number(income) }); if (error) { alert(error.message); return; } router.push("/dashboard"); }} className="h-14 w-full rounded-xl bg-[#D4AF37] px-8 text-base font-bold text-black sm:w-auto">{editing ? "Save Changes" : "Save Profile"}</button>
         </div>
       </section>
     </main>
