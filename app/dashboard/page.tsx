@@ -110,17 +110,28 @@ export default function DashboardPage() {
         </section>
 
         <section className="border-t border-[#222] py-8">
-          <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6 sm:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">
-              Next
-            </p>
-            <h2 className="mt-3 text-2xl font-bold">
-              Build your financial picture
-            </h2>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-gray-400">
-              RunRate will use your profile together with your work and offer
-              details to help you understand pricing and financial runway.
-            </p>
+          <div className="mb-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">RunRate Tools</p>
+            <h2 className="mt-2 text-2xl font-bold sm:text-3xl">Your financial workspace</h2>
+            <p className="mt-2 text-base text-gray-400">Use your profile as the starting point for smarter freelance pricing decisions.</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
+              <p className="text-sm font-semibold text-[#D4AF37]">01</p>
+              <Link href="/dashboard/runway" className="block"><h3 className="mt-3 text-xl font-bold hover:text-[#D4AF37]">Financial Runway</h3></Link>
+              <p className="mt-2 text-sm leading-6 text-gray-400">Understand how your savings and income support your freelance work.</p>
+            </div>
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
+              <p className="text-sm font-semibold text-[#D4AF37]">02</p>
+              <h3 className="mt-3 text-xl font-bold">Rate Calculator</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-400">Work out pricing that reflects your financial needs and goals.</p>
+            </div>
+            <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
+              <p className="text-sm font-semibold text-[#D4AF37]">03</p>
+              <h3 className="mt-3 text-xl font-bold">Offer Analysis</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-400">Evaluate freelance jobs and offers before deciding what to accept.</p>
+            </div>
           </div>
         </section>
       </div>
