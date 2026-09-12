@@ -124,7 +124,7 @@ export default function DashboardPage() {
             </div>
             <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
               <p className="text-sm font-semibold text-[#D4AF37]">02</p>
-              <h3 className="mt-3 text-xl font-bold">Rate Calculator</h3>
+              <Link href="/dashboard/rate-calculator" className="block"><h3 className="mt-3 text-xl font-bold">Rate Calculator</h3></Link>
               <p className="mt-2 text-sm leading-6 text-gray-400">Work out pricing that reflects your financial needs and goals.</p>
             </div>
             <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
