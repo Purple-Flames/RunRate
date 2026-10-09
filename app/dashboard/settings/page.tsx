@@ -16,7 +16,12 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     const loadIdentities = async () => {
       const supabase = createClient()
-      const { data } = await supabase.auth.getUserIdentities()
+      const { data, error: identityError } = await supabase.auth.getUserIdentities()
+      if (identityError) {
+        setError('We could not verify the sign-in methods on this account. Refresh and try again.')
+        return
+      }
+
       const identities = data?.identities ?? []
       setHasGoogle(identities.some((identity) => identity.provider === 'google'))
       setHasPassword(identities.some((identity) => identity.provider === 'email'))

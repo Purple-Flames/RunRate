@@ -19,12 +19,24 @@ export async function signInWithGoogle() {
   }
 }
 
+function toAccountSecurityError(error: { message: string; code?: string; status?: number }) {
+  if (error.code === 'identity_already_exists' || error.code === 'identity_exists') {
+    return new Error('That Google identity is already linked to a different RunRate account. Sign in to that account instead; no profile or financial data was changed.')
+  }
+
+  if (error.code === 'reauthentication_needed' || error.status === 401) {
+    return new Error('Supabase requires you to reauthenticate before changing account sign-in methods. Please sign in again and retry.')
+  }
+
+  return new Error(error.message)
+}
+
 export async function reauthenticateCurrentUser() {
   const supabase = createClient()
   const { error } = await supabase.auth.reauthenticate()
 
   if (error) {
-    throw error
+    throw toAccountSecurityError(error)
   }
 }
 
@@ -40,7 +52,7 @@ export async function linkGoogleIdentity() {
   })
 
   if (error) {
-    throw error
+    throw toAccountSecurityError(error)
   }
 
   return data
@@ -53,7 +65,7 @@ export async function setAccountPassword(password: string) {
   const { error } = await supabase.auth.updateUser({ password })
 
   if (error) {
-    throw error
+    throw toAccountSecurityError(error)
   }
 }
 
