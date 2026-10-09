@@ -19,6 +19,44 @@ export async function signInWithGoogle() {
   }
 }
 
+export async function reauthenticateCurrentUser() {
+  const supabase = createClient()
+  const { error } = await supabase.auth.reauthenticate()
+
+  if (error) {
+    throw error
+  }
+}
+
+export async function linkGoogleIdentity() {
+  const supabase = createClient()
+  await reauthenticateCurrentUser()
+
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+export async function setAccountPassword(password: string) {
+  const supabase = createClient()
+  await reauthenticateCurrentUser()
+
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) {
+    throw error
+  }
+}
+
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const supabase = createClient()
 

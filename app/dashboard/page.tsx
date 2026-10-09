@@ -58,7 +58,10 @@ export default function DashboardPage() {
             {categoryDisplay}
           </div>
          <LogoutButton />
-        <Link href="/onboarding" className="rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300">Edit Profile</Link>
+        <div className="flex flex-wrap gap-3">
+            <Link href="/dashboard/settings" className="rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300">Account Settings</Link>
+            <Link href="/onboarding" className="rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300">Edit Profile</Link>
+          </div>
 </header>
 
         <section className="py-8">
