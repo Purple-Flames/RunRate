@@ -31,9 +31,29 @@ function toAccountSecurityError(error: { message: string; code?: string; status?
   return new Error(error.message)
 }
 
-export async function reauthenticateCurrentUser() {
+export async function requestReauthentication() {
   const supabase = createClient()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user?.email) {
+    throw new Error('We could not verify your account email. Please sign in again and retry.')
+  }
+
   const { error } = await supabase.auth.reauthenticate()
+  if (error) {
+    throw toAccountSecurityError(error)
+  }
+
+  return user.email
+}
+
+export async function completeReauthentication(email: string, token: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'reauthentication',
+  })
 
   if (error) {
     throw toAccountSecurityError(error)
@@ -42,8 +62,6 @@ export async function reauthenticateCurrentUser() {
 
 export async function linkGoogleIdentity() {
   const supabase = createClient()
-  await reauthenticateCurrentUser()
-
   const { data, error } = await supabase.auth.linkIdentity({
     provider: 'google',
     options: {
@@ -60,7 +78,6 @@ export async function linkGoogleIdentity() {
 
 export async function setAccountPassword(password: string) {
   const supabase = createClient()
-  await reauthenticateCurrentUser()
 
   const { error } = await supabase.auth.updateUser({ password })
 

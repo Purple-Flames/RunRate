@@ -2,7 +2,12 @@
 
 import { FormEvent, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { linkGoogleIdentity, setAccountPassword } from '@/lib/supabase/auth'
+import {
+  completeReauthentication,
+  linkGoogleIdentity,
+  requestReauthentication,
+  setAccountPassword,
+} from '@/lib/supabase/auth'
 
 export default function AccountSettingsPage() {
   const [hasGoogle, setHasGoogle] = useState(false)
@@ -12,6 +17,9 @@ export default function AccountSettingsPage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [reauthEmail, setReauthEmail] = useState('')
+  const [reauthToken, setReauthToken] = useState('')
+  const [reauthPending, setReauthPending] = useState(false)
 
   useEffect(() => {
     const loadIdentities = async () => {
@@ -30,14 +38,37 @@ export default function AccountSettingsPage() {
     void loadIdentities()
   }, [])
 
-  const handleLinkGoogle = async () => {
+  const requestSecurityCode = async () => {
     setBusy(true)
     setMessage('')
     setError('')
     try {
+      const email = await requestReauthentication()
+      setReauthEmail(email)
+      setReauthPending(true)
+      setMessage('A verification code was sent to your account email. Enter it below to continue.')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'We could not start reauthentication.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleLinkGoogle = async () => {
+    if (!reauthPending || !reauthToken) {
+      await requestSecurityCode()
+      return
+    }
+
+    setBusy(true)
+    setMessage('')
+    setError('')
+    try {
+      await completeReauthentication(reauthEmail, reauthToken)
       await linkGoogleIdentity()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Google could not be linked.')
+    } finally {
       setBusy(false)
     }
   }
@@ -55,12 +86,20 @@ export default function AccountSettingsPage() {
       return
     }
 
+    if (!reauthPending || !reauthToken) {
+      await requestSecurityCode()
+      return
+    }
+
     setBusy(true)
     try {
+      await completeReauthentication(reauthEmail, reauthToken)
       await setAccountPassword(password)
       setHasPassword(true)
       setPassword('')
       setConfirmPassword('')
+      setReauthToken('')
+      setReauthPending(false)
       setMessage('Your password is set. You can now use email and password to sign in.')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Password could not be updated.')
@@ -80,6 +119,22 @@ export default function AccountSettingsPage() {
         </header>
 
         <div className="mt-8 grid gap-6">
+          <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
+            <h2 className="text-xl font-semibold">Verify before changing sign-in methods</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-400">RunRate asks Supabase to reauthenticate you before linking Google or setting a password. This keeps your existing user ID, profile, and financial data unchanged.</p>
+            <div className="mt-5 grid gap-3 sm:max-w-md">
+              <button type="button" onClick={requestSecurityCode} disabled={busy} className="rounded-lg border border-[#d4af37] px-4 py-3 text-sm font-semibold text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-50">
+                {busy ? 'Sending verification code…' : 'Send verification code'}
+              </button>
+              {reauthPending && (
+                <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">
+                  Verification code
+                  <input id="reauth-token" inputMode="numeric" autoComplete="one-time-code" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#d4af37]" />
+                </label>
+              )}
+            </div>
+          </section>
+
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Google sign-in</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">Link Google to this signed-in account. RunRate will not merge another account or profile based on an email address.</p>
