@@ -54,15 +54,27 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          <div className="rounded-full border border-[#333] px-4 py-2 text-sm text-gray-300">
-            {categoryDisplay}
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:items-end">
+            <div className="w-fit rounded-full border border-[#333] px-4 py-2 text-sm text-gray-300">
+              {categoryDisplay}
+            </div>
+            <nav aria-label="Account navigation" className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+              <Link
+                href="/dashboard/settings"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#D4AF37] px-4 py-2 text-sm font-semibold text-[#D4AF37] transition-colors hover:bg-[#D4AF37] hover:text-black"
+              >
+                Account Settings
+              </Link>
+              <Link
+                href="/onboarding"
+                className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300 transition-colors hover:border-[#D4AF37] hover:text-[#D4AF37]"
+              >
+                Edit Profile
+              </Link>
+              <LogoutButton />
+            </nav>
           </div>
-         <LogoutButton />
-        <div className="flex flex-wrap gap-3">
-            <Link href="/dashboard/settings" className="rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300">Account Settings</Link>
-            <Link href="/onboarding" className="rounded-lg border border-[#333] px-4 py-2 text-sm text-gray-300">Edit Profile</Link>
-          </div>
-</header>
+        </header>
 
         <section className="py-8">
           <div className="mb-6">
