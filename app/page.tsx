@@ -152,7 +152,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
       {/* Navigation */}
-      <header className="border-b border-white/10">
+      <header className="homepage-header border-b border-white/10">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <nav className="flex h-20 items-center justify-between">
             <a href="/" className="flex items-center gap-2">

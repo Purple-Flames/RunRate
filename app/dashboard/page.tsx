@@ -129,7 +129,7 @@ export default function DashboardPage() {
             </div>
             <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
               <p className="text-sm font-semibold text-[#D4AF37]">03</p>
-              <h3 className="mt-3 text-xl font-bold">Offer Analysis</h3>
+              <Link href="/dashboard/offer-analysis" className="block"><h3 className="mt-3 text-xl font-bold hover:text-[#D4AF37]">Offer Analysis</h3></Link>
               <p className="mt-2 text-sm leading-6 text-gray-400">Evaluate freelance jobs and offers before deciding what to accept.</p>
             </div>
           </div>
