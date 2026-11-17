@@ -1,6 +1,8 @@
 'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   completeReauthentication,
@@ -10,8 +12,11 @@ import {
 } from '@/lib/supabase/auth'
 
 export default function AccountSettingsPage() {
+  const router = useRouter()
   const [hasGoogle, setHasGoogle] = useState(false)
   const [hasPassword, setHasPassword] = useState(false)
+  const [accountAvailable, setAccountAvailable] = useState(false)
+  const [identitiesLoading, setIdentitiesLoading] = useState(true)
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [message, setMessage] = useState('')
@@ -20,43 +25,61 @@ export default function AccountSettingsPage() {
   const [reauthEmail, setReauthEmail] = useState('')
   const [reauthToken, setReauthToken] = useState('')
   const [reauthPending, setReauthPending] = useState(false)
+  const [reauthenticated, setReauthenticated] = useState(false)
 
   useEffect(() => {
+    let active = true
     const loadIdentities = async () => {
-      const supabase = createClient()
-      const { data, error: identityError } = await supabase.auth.getUserIdentities()
-      if (identityError) {
-        setError('We could not verify the sign-in methods on this account. Refresh and try again.')
-        return
-      }
+      try {
+        const supabase = createClient()
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (userError?.name === 'AuthSessionMissingError' || (!user && !userError)) {
+          router.replace('/login')
+          return
+        }
+        if (userError || !user) throw new Error('session')
 
-      const identities = data?.identities ?? []
-      setHasGoogle(identities.some((identity) => identity.provider === 'google'))
-      setHasPassword(identities.some((identity) => identity.provider === 'email'))
+        const { data, error: identityError } = await supabase.auth.getUserIdentities()
+        if (identityError) throw identityError
+        if (!active) return
+
+        const identities = data?.identities ?? []
+        setHasGoogle(identities.some((identity) => identity.provider === 'google'))
+        setHasPassword(identities.some((identity) => identity.provider === 'email'))
+        setAccountAvailable(true)
+      } catch {
+        if (active) setError('We could not verify this account. Please sign in again and retry.')
+      } finally {
+        if (active) setIdentitiesLoading(false)
+      }
     }
 
     void loadIdentities()
-  }, [])
+    return () => { active = false }
+  }, [router])
 
   const requestSecurityCode = async () => {
+    if (!accountAvailable || busy) return
     setBusy(true)
     setMessage('')
     setError('')
+    setReauthenticated(false)
+    setReauthToken('')
     try {
       const email = await requestReauthentication()
       setReauthEmail(email)
       setReauthPending(true)
-      setMessage('A verification code was sent to your account email. Enter it below to continue.')
+      setMessage('If this email can receive verification codes, one has been sent. Enter it below to verify your identity.')
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'We could not start reauthentication.')
+      setError(caught instanceof Error ? caught.message : 'We could not start verification.')
     } finally {
       setBusy(false)
     }
   }
 
-  const handleLinkGoogle = async () => {
-    if (!reauthPending || !reauthToken) {
-      await requestSecurityCode()
+  const verifySecurityCode = async () => {
+    if (!reauthToken.trim()) {
+      setError('Enter the verification code from your email.')
       return
     }
 
@@ -64,11 +87,31 @@ export default function AccountSettingsPage() {
     setMessage('')
     setError('')
     try {
-      await completeReauthentication(reauthEmail, reauthToken)
+      await completeReauthentication(reauthEmail, reauthToken.trim())
+      setReauthPending(false)
+      setReauthenticated(true)
+      setReauthToken('')
+      setMessage('Identity verified. You can now choose a sign-in method to update.')
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'The verification code could not be confirmed.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleLinkGoogle = async () => {
+    if (!reauthenticated) {
+      setError('Verify your identity before linking Google.')
+      return
+    }
+
+    setBusy(true)
+    setMessage('')
+    setError('')
+    try {
       await linkGoogleIdentity()
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Google could not be linked.')
-    } finally {
       setBusy(false)
     }
   }
@@ -77,6 +120,7 @@ export default function AccountSettingsPage() {
     event.preventDefault()
     setMessage('')
     setError('')
+
     if (password.length < 8) {
       setError('Use at least 8 characters for your password.')
       return
@@ -85,21 +129,18 @@ export default function AccountSettingsPage() {
       setError('Passwords do not match.')
       return
     }
-
-    if (!reauthPending || !reauthToken) {
-      await requestSecurityCode()
+    if (!reauthenticated) {
+      setError(reauthPending ? 'Verify the code above before updating your password.' : 'Verify your identity before updating your password.')
       return
     }
 
     setBusy(true)
     try {
-      await completeReauthentication(reauthEmail, reauthToken)
       await setAccountPassword(password)
       setHasPassword(true)
       setPassword('')
       setConfirmPassword('')
-      setReauthToken('')
-      setReauthPending(false)
+      setReauthenticated(false)
       setMessage('Your password is set. You can now use email and password to sign in.')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Password could not be updated.')
@@ -109,11 +150,11 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black px-4 py-8 text-white sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-[#050505] px-4 py-8 text-white sm:px-6 lg:px-10">
       <div className="mx-auto w-full max-w-3xl">
-        <a href="/dashboard" className="text-sm text-[#d4af37] hover:underline">← Back to dashboard</a>
+        <Link href="/dashboard" className="text-sm text-[#D4AF37] hover:underline">← Back to dashboard</Link>
         <header className="mt-8 border-b border-[#3b321c] pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d4af37]">RunRate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#D4AF37]">RunRate</p>
           <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Account Settings</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-400">Securely manage the sign-in methods attached to this account. Your existing profile and financial data stay attached to the same user ID.</p>
         </header>
@@ -121,39 +162,46 @@ export default function AccountSettingsPage() {
         <div className="mt-8 grid gap-6">
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Verify before changing sign-in methods</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">RunRate asks Supabase to reauthenticate you before linking Google or setting a password. This keeps your existing user ID, profile, and financial data unchanged.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">Verification is separate from changing your password. You can confirm your identity first, then choose whether to link Google or set a password.</p>
             <div className="mt-5 grid gap-3 sm:max-w-md">
-              <button type="button" onClick={requestSecurityCode} disabled={busy} className="rounded-lg border border-[#d4af37] px-4 py-3 text-sm font-semibold text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-50">
-                {busy ? 'Sending verification code…' : 'Send verification code'}
+              <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">
+                {identitiesLoading ? 'Checking account…' : busy ? 'Please wait…' : reauthPending ? 'Send a new verification code' : 'Send verification code'}
               </button>
               {reauthPending && (
-                <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">
-                  Verification code
-                  <input id="reauth-token" inputMode="numeric" autoComplete="one-time-code" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#d4af37]" />
-                </label>
+                <div className="grid gap-3">
+                  <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">
+                    Verification code sent to {reauthEmail}
+                    <input id="reauth-token" inputMode="numeric" autoComplete="one-time-code" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" />
+                  </label>
+                  <button type="button" onClick={verifySecurityCode} disabled={busy || !reauthToken.trim()} className="min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
+                    {busy ? 'Verifying…' : 'Verify and continue'}
+                  </button>
+                </div>
               )}
+              {reauthenticated && <p className="text-sm text-emerald-300">Identity verified. No password change is required to continue.</p>}
             </div>
           </section>
 
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Google sign-in</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">Link Google to this signed-in account. RunRate will not merge another account or profile based on an email address.</p>
-            <button type="button" onClick={handleLinkGoogle} disabled={busy || hasGoogle} className="mt-5 rounded-lg bg-[#d4af37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
+            <p className="mt-3 text-sm text-gray-300">{identitiesLoading ? 'Checking linked accounts…' : hasGoogle ? 'Google is linked to this account.' : 'Google is not linked.'}</p>
+            <button type="button" onClick={handleLinkGoogle} disabled={busy || identitiesLoading || !accountAvailable || hasGoogle || !reauthenticated} className="mt-5 min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
               {hasGoogle ? 'Google is linked' : busy ? 'Preparing secure link…' : 'Link Google account'}
             </button>
           </section>
 
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Email and password</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">Set or update a password for this account. Reauthentication is required before this sensitive change.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">{hasPassword ? 'Update the password for this account.' : 'Set a password to enable email and password sign-in.'} Verification is required first.</p>
             <form onSubmit={handlePassword} className="mt-5 grid gap-4 sm:max-w-md">
-              <label className="grid gap-2 text-sm font-medium" htmlFor="new-password">New password<input id="new-password" type="password" autoComplete="new-password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} className="rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#d4af37]" /></label>
-              <label className="grid gap-2 text-sm font-medium" htmlFor="confirm-password">Confirm password<input id="confirm-password" type="password" autoComplete="new-password" minLength={8} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#d4af37]" /></label>
-              <button type="submit" disabled={busy || !password || !confirmPassword} className="rounded-lg border border-[#d4af37] px-4 py-3 text-sm font-semibold text-[#d4af37] disabled:cursor-not-allowed disabled:opacity-50">{hasPassword ? 'Update password' : 'Set password'}</button>
+              <label className="grid gap-2 text-sm font-medium" htmlFor="new-password">New password<input id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" /></label>
+              <label className="grid gap-2 text-sm font-medium" htmlFor="confirm-password">Confirm password<input id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" /></label>
+              <button type="submit" disabled={busy || identitiesLoading || !accountAvailable || !password || !confirmPassword} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Updating password…' : hasPassword ? 'Update password' : 'Set password'}</button>
             </form>
           </section>
 
-          {message && <p role="status" className="rounded-lg border border-green-800 bg-green-950/40 p-4 text-sm text-green-200">{message}</p>}
+          {message && <p role="status" aria-live="polite" className="rounded-lg border border-green-800 bg-green-950/40 p-4 text-sm text-green-200">{message}</p>}
           {error && <p role="alert" className="rounded-lg border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{error}</p>}
         </div>
       </div>

@@ -1,16 +1,21 @@
 import { createClient } from './client'
 
+function authCallbackUrl(next?: string) {
+  const redirectOrigin = process.env.NODE_ENV === 'development'
+    ? process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? window.location.origin
+    : window.location.origin
+  const callback = new URL('/auth/callback', redirectOrigin)
+  if (next) callback.searchParams.set('next', next)
+  return callback.toString()
+}
+
 export async function signInWithGoogle() {
   const supabase = createClient()
-  const redirectOrigin =
-    process.env.NODE_ENV === 'development'
-      ? process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? window.location.origin
-      : window.location.origin
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${redirectOrigin}/auth/callback`,
+      redirectTo: authCallbackUrl(),
     },
   })
 
@@ -28,7 +33,19 @@ function toAccountSecurityError(error: { message: string; code?: string; status?
     return new Error('Supabase requires you to reauthenticate before changing account sign-in methods. Please sign in again and retry.')
   }
 
-  return new Error(error.message)
+  if (error.status === 429) {
+    return new Error('Too many security attempts. Please wait before trying again.')
+  }
+
+  if (error.code === 'otp_expired' || error.code === 'otp_disabled' || error.code === 'invalid_otp' || error.code === 'otp_not_found') {
+    return new Error('That verification code could not be confirmed. Check the code or request a new one.')
+  }
+
+  if (error.code === 'weak_password') {
+    return new Error('Choose a stronger password and try again.')
+  }
+
+  return new Error('We could not complete this account change. Please try again.')
 }
 
 export async function requestReauthentication() {
@@ -65,7 +82,7 @@ export async function linkGoogleIdentity() {
   const { data, error } = await supabase.auth.linkIdentity({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: authCallbackUrl('/dashboard/settings'),
     },
   })
 
@@ -86,6 +103,18 @@ export async function setAccountPassword(password: string) {
   }
 }
 
+export async function requestPasswordRecovery(email: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: authCallbackUrl('/reset-password'),
+  })
+
+  if (error) {
+    if (error.status === 429) throw new Error('Too many reset requests. Please wait a little before trying again.')
+    throw new Error('We could not send a reset email right now. Please try again later.')
+  }
+}
+
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const supabase = createClient()
 
@@ -93,6 +122,7 @@ export async function signUpWithEmail(email: string, password: string, fullName:
     email,
     password,
     options: {
+      emailRedirectTo: authCallbackUrl(),
       data: {
         full_name: fullName,
       },

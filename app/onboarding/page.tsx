@@ -1,86 +1,175 @@
-"use client"
-import { createClient } from "@/lib/supabase/client"
-import { useRouter } from "next/navigation"
+'use client'
 
-import { useEffect, useState } from "react"
+import { FormEvent, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+import { useUserProfile } from '@/lib/supabase/use-profile'
+
+const presetCategories = ['Designer', 'Developer', 'Writer', 'Marketer', 'Consultant']
 
 export default function OnboardingPage() {
   const router = useRouter()
+  const { data: account, error: profileLoadError, isLoading, mutate } = useUserProfile()
+  const initialized = useRef(false)
   const [categories, setCategories] = useState<string[]>([])
-  const [customCategory, setCustomCategory] = useState("")
-  const [currency, setCurrency] = useState("NGN")
-  const [expenses, setExpenses] = useState("")
-  const [savings, setSavings] = useState("")
-  const [income, setIncome] = useState("")
-  const [editing, setEditing] = useState(false)
+  const [customCategory, setCustomCategory] = useState('')
+  const [currency, setCurrency] = useState('NGN')
+  const [expenses, setExpenses] = useState('')
+  const [savings, setSavings] = useState('')
+  const [income, setIncome] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [formError, setFormError] = useState('')
 
   useEffect(() => {
-    async function loadProfile() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user == null) return
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle()
-      if (data) {
-        setCategories(Array.isArray(data.category) ? data.category : [data.category])
-        setCurrency(data.currency)
-        setExpenses(String(data.expenses))
-        setSavings(String(data.savings))
-        setIncome(String(data.income))
-        setEditing(true)
-      }
+    if (isLoading || profileLoadError) return
+    if (!account) router.replace('/login')
+  }, [account, isLoading, profileLoadError, router])
+
+  useEffect(() => {
+    const profile = account?.profile
+    if (!profile || initialized.current) return
+    const savedCategories = Array.isArray(profile.category) ? profile.category : profile.category ? [profile.category] : []
+    setCategories(savedCategories.filter((item): item is string => typeof item === 'string' && item.length > 0))
+    setCurrency(profile.currency || 'NGN')
+    setExpenses(String(profile.expenses ?? ''))
+    setSavings(String(profile.savings ?? ''))
+    setIncome(String(profile.income ?? ''))
+    initialized.current = true
+  }, [account?.profile])
+
+  function toggleCategory(category: string, checked: boolean) {
+    setCategories((current) => checked
+      ? current.includes(category) ? current : [...current, category]
+      : current.filter((item) => item !== category))
+  }
+
+  function addCustomCategory() {
+    const value = customCategory.trim()
+    if (!value) return
+    setCategories((current) => current.some((item) => item.toLowerCase() === value.toLowerCase()) ? current : [...current, value])
+    setCustomCategory('')
+  }
+
+  async function handleSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setFormError('')
+    if (!account) {
+      setFormError('Your session has expired. Sign in again before saving.')
+      return
     }
-    loadProfile()
-  }, [])
+    if (categories.length === 0) {
+      setFormError('Choose at least one freelancer category.')
+      return
+    }
+
+    const values = [expenses, savings, income].map((value) => value.trim() === '' ? Number.NaN : Number(value))
+    if (values.some((value) => !Number.isFinite(value) || value < 0)) {
+      setFormError('Enter a valid non-negative amount for each financial field.')
+      return
+    }
+
+    setBusy(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.from('profiles').upsert({
+        id: account.userId,
+        category: categories,
+        currency,
+        expenses: values[0],
+        savings: values[1],
+        income: values[2],
+      })
+      if (error) throw error
+
+      await mutate({
+        userId: account.userId,
+        profile: { category: categories, currency, expenses: values[0], savings: values[1], income: values[2] },
+      }, { revalidate: false })
+      router.push('/dashboard')
+    } catch {
+      setFormError('We could not save your profile. Check your connection and try again.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  if (isLoading || (!profileLoadError && !account)) {
+    return <main className="flex min-h-screen items-center justify-center bg-[#050505] text-white"><p role="status" className="text-sm text-gray-400">Loading your profile…</p></main>
+  }
+
+  if (profileLoadError) {
+    return <main className="flex min-h-screen items-center justify-center bg-[#050505] px-6 text-center text-white"><div className="max-w-md"><h1 className="text-2xl font-bold">Profile unavailable</h1><p className="mt-3 text-sm text-gray-400">We could not load your saved profile. Try again or sign in again.</p><Link href="/login" className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-[#D4AF37] px-4 text-sm text-[#D4AF37]">Sign in</Link></div></main>
+  }
+
+  if (!account) return null
+
+  const editing = Boolean(account.profile)
 
   return (
     <main className="min-h-screen w-full bg-[#050505] text-white">
-      <header className="w-full border-b border-[#222] px-6 py-5">
-        <span className="text-xl font-bold">Run<span className="text-[#D4AF37]">Rate</span></span>
-      </header>
-      <section className="min-h-[calc(100vh-73px)] w-full px-6 py-10 sm:px-10 lg:px-16">
+      <header className="w-full border-b border-[#222] px-6 py-5"><Link href="/" className="text-xl font-bold">Run<span className="text-[#D4AF37]">Rate</span></Link></header>
+      <form onSubmit={handleSave} className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 lg:px-12">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#D4AF37]">Profile Setup</p>
         <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-5xl">Let&apos;s get your RunRate ready.</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-400">Your saved categories and financial figures are prefilled when editing. Saving updates these profile fields without changing your sign-in method.</p>
+
         <div className="mt-10 grid w-full gap-8 lg:grid-cols-2">
-          <div>
-            <label className="block text-sm font-bold">Freelancer Category</label>
+          <fieldset className="min-w-0">
+            <legend className="text-sm font-bold">Freelancer category</legend>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              
-              
-              
-              
-              
-              
-              
-            {["Designer", "Developer", "Writer", "Marketer", "Consultant"].map((item) => (<label key={item} className="flex items-center gap-3 rounded-xl border border-[#333] bg-[#111] px-4 py-4 text-base text-white"><input type="checkbox" checked={categories.includes(item)} onChange={(e) => setCategories(e.target.checked ? [...categories, item] : categories.filter((value) => value !== item))} className="h-5 w-5 accent-[#D4AF37]" />{item}</label>))}</div>
-          </div>
-          <div className="mt-4 flex gap-3"><input value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} placeholder="Add another category" className="h-12 flex-1 rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white" /><button type="button" onClick={() => { const value = customCategory.trim(); if (value && categories.includes(value) === false) { setCategories([...categories, value]); setCustomCategory("") } }} className="rounded-xl border border-[#D4AF37] px-5 text-sm font-semibold text-[#D4AF37]">Add</button></div>
+              {presetCategories.map((item) => (
+                <label key={item} className="flex min-h-12 items-center gap-3 rounded-xl border border-[#333] bg-[#111] px-4 py-3 text-sm text-white">
+                  <input type="checkbox" checked={categories.includes(item)} onChange={(event) => toggleCategory(item, event.target.checked)} className="h-5 w-5 accent-[#D4AF37]" />
+                  {item}
+                </label>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+              <label htmlFor="custom-category" className="sr-only">Add another category</label>
+              <input id="custom-category" value={customCategory} onChange={(event) => setCustomCategory(event.target.value)} placeholder="Add another category" className="min-h-12 min-w-0 flex-1 rounded-xl border border-[#444] bg-[#111] px-4 text-sm text-white" />
+              <button type="button" onClick={addCustomCategory} className="min-h-12 rounded-xl border border-[#D4AF37] px-5 text-sm font-semibold text-[#D4AF37]">Add category</button>
+            </div>
+            {categories.filter((item) => !presetCategories.includes(item)).length > 0 && (
+              <ul aria-label="Additional categories" className="mt-4 flex flex-wrap gap-2">
+                {categories.filter((item) => !presetCategories.includes(item)).map((item) => (
+                  <li key={item} className="flex items-center gap-2 rounded-full border border-[#4b4024] px-3 py-1 text-sm text-gray-200">
+                    <span>{item}</span><button type="button" aria-label={`Remove ${item}`} onClick={() => setCategories((current) => current.filter((category) => category !== item))} className="text-[#D4AF37]">Remove</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </fieldset>
 
           <div>
-            <label className="block text-sm font-bold">Currency</label>
-            <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white">
+            <label htmlFor="currency" className="block text-sm font-bold">Currency</label>
+            <select id="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-sm text-white">
               <option value="NGN">Nigerian Naira (₦)</option>
               <option value="USD">US Dollar ($)</option>
             </select>
           </div>
         </div>
-        <div className="mt-8 grid w-full gap-8 lg:grid-cols-2">
-          <div>
-            <label className="block text-sm font-bold">Monthly Expenses</label>
-            <input value={expenses} onChange={(e) => setExpenses(e.target.value)} type="number" placeholder="Enter your monthly expenses" className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white placeholder:text-[#777]" />
-          </div>
-          <div>
-            <label className="block text-sm font-bold">Current Savings</label>
-            <input value={savings} onChange={(e) => setSavings(e.target.value)} type="number" placeholder="Enter your current savings" className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white placeholder:text-[#777]" />
-          </div>
+
+        <div className="mt-8 grid w-full gap-6 sm:grid-cols-2">
+          <FinancialInput id="expenses" label="Monthly expenses" value={expenses} onChange={setExpenses} />
+          <FinancialInput id="savings" label="Current savings" value={savings} onChange={setSavings} />
         </div>
-        <div className="mt-8 w-full">
-          <label className="block text-sm font-bold">Average Monthly Income</label>
-          <input value={income} onChange={(e) => setIncome(e.target.value)} type="number" placeholder="Enter your average monthly income" className="mt-3 h-14 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-base text-white placeholder:text-[#777]" />
+        <div className="mt-6 max-w-xl"><FinancialInput id="income" label="Average monthly income" value={income} onChange={setIncome} /></div>
+
+        {formError && <p role="alert" className="mt-6 rounded-lg border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{formError}</p>}
+        <div className="mt-8 flex w-full justify-end">
+          <button type="submit" disabled={busy || isLoading} className="min-h-12 w-full rounded-xl bg-[#D4AF37] px-8 text-sm font-bold text-black disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">{busy ? 'Saving profile…' : editing ? 'Save changes' : 'Save profile'}</button>
         </div>
-        <div className="mt-10 flex w-full justify-end">
-          <button type="button" onClick={async () => { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (user === null) { alert("Please log in again."); return; } const { error } = await supabase.from("profiles").upsert({ id: user.id, category: categories, currency, expenses: Number(expenses), savings: Number(savings), income: Number(income) }); if (error) { alert(error.message); return; } router.push("/dashboard"); }} className="h-14 w-full rounded-xl bg-[#D4AF37] px-8 text-base font-bold text-black sm:w-auto">{editing ? "Save Changes" : "Save Profile"}</button>
-        </div>
-      </section>
+      </form>
     </main>
+  )
+}
+
+function FinancialInput({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-bold">{label}</label>
+      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} type="number" min="0" step="0.01" required inputMode="decimal" placeholder="Enter an amount" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-sm text-white placeholder:text-[#777]" />
+    </div>
   )
 }

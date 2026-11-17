@@ -1,12 +1,19 @@
 "use client"
 
+import { useRouter } from "next/navigation"
+import { mutate } from "swr"
 import { createClient } from "@/lib/supabase/client"
 
 export default function LogoutButton() {
+  const router = useRouter()
+
   async function handleLogout() {
     const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = "/"
+    const { error } = await supabase.auth.signOut()
+    if (!error) {
+      await mutate('runrate:authenticated-profile', undefined, { revalidate: false })
+      router.replace("/")
+    }
   }
 
   return (
