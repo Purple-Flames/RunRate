@@ -72,14 +72,16 @@ export default function OnboardingPage() {
     setBusy(true)
     try {
       const supabase = createClient()
-      const { error } = await supabase.from('profiles').upsert({
-        id: account.userId,
+      const profileValues = {
         category: categories,
         currency,
         expenses: values[0],
         savings: values[1],
         income: values[2],
-      })
+      }
+      const { error } = account.profile
+        ? await supabase.from('profiles').update(profileValues).eq('id', account.userId)
+        : await supabase.from('profiles').insert({ id: account.userId, ...profileValues })
       if (error) throw error
 
       await mutate({

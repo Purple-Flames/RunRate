@@ -10,10 +10,16 @@ function numericInput(value: string) {
   return value.trim() === '' ? Number.NaN : Number(value)
 }
 
+const availableCategories = [
+  'Designer', 'Developer', 'Writer', 'Marketer', 'Consultant', 'Accountant', 'Animator',
+  'Copywriter', 'Data Analyst', 'Photographer', 'Project Manager', 'SEO Specialist',
+  'Social Media Manager', 'Translator', 'Virtual Assistant', 'Videographer',
+]
+
 export default function OfferAnalysisPage() {
   const router = useRouter()
   const { data: account, error: profileError, isLoading } = useUserProfile()
-  const [category, setCategory] = useState('')
+  const [category, setCategory] = useState<string | null>(null)
   const [offer, setOffer] = useState('')
   const [hoursPerDay, setHoursPerDay] = useState('')
   const [daysPerWeek, setDaysPerWeek] = useState('')
@@ -28,8 +34,10 @@ export default function OfferAnalysisPage() {
 
   const categories = useMemo(() => {
     const profileCategory = account?.profile?.category
-    return (Array.isArray(profileCategory) ? profileCategory : profileCategory ? [profileCategory] : []).filter(Boolean)
+    const saved = (Array.isArray(profileCategory) ? profileCategory : profileCategory ? [profileCategory] : []).filter(Boolean)
+    return [...new Set([...saved, ...availableCategories])]
   }, [account?.profile?.category])
+
 
   if (isLoading || (!profileError && (!account || !account.profile))) {
     return <main className="flex min-h-screen items-center justify-center bg-[#050505] text-white"><p role="status" className="text-gray-400">Loading your profile…</p></main>
@@ -39,6 +47,8 @@ export default function OfferAnalysisPage() {
   }
 
   const profile = account.profile
+  const savedCategory = Array.isArray(profile.category) ? profile.category[0] ?? '' : profile.category ?? ''
+  const selectedCategory = category ?? (savedCategory || categories[0] || '')
   const currency = profile.currency || 'NGN'
   const monthlyExpenses = Math.max(0, Number(profile.expenses) || 0)
   const monthlyIncome = Math.max(0, Number(profile.income) || 0)
@@ -56,7 +66,12 @@ export default function OfferAnalysisPage() {
   const categoryLabel = (value: string) => value ? value.charAt(0).toUpperCase() + value.slice(1) : value
   const money = (value: number) => formatCurrency(value, currency)
   const signedMoney = (value: number) => value < 0 ? `-${money(value)}` : money(value)
-  const runwayLabel = (value: number | null) => value === null ? 'No monthly drawdown' : `${value.toFixed(1)} months`
+  const runwayLabel = (value: number | null) => value === null ? 'Income covers monthly expenses; savings are not being drawn down' : `${value.toFixed(1)} months`
+  const monthlyPositionText = analysis.monthlyBurn > 0
+    ? `Your monthly income is ${money(analysis.monthlyBurn)} below expenses, so you would need to use savings to cover that amount each month.`
+    : monthlyIncome > monthlyExpenses
+      ? `Your monthly income covers expenses with ${money(monthlyIncome - monthlyExpenses)} left each month. Savings are not needed for these expenses and remain available for emergencies.`
+      : 'Your monthly income covers expenses exactly, with no surplus. Savings are not needed for these expenses and remain available for emergencies.'
   const statusText = analysis.status === 'below-expenses'
     ? 'This offer does not cover the expenses allocated to the project period.'
     : analysis.status === 'below-target'
@@ -92,7 +107,7 @@ export default function OfferAnalysisPage() {
             <h2 className="text-lg font-semibold">Offer details</h2>
             <p className="mt-1 text-sm text-gray-500">Your saved currency and profile figures are used automatically.</p>
             <div className="mt-6 grid gap-5">
-              <label htmlFor="offer-category" className="text-sm font-semibold text-gray-300">Freelancer category<select id="offer-category" value={categories.includes(category) ? category : categories[0] ?? ''} onChange={(event) => setCategory(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 font-normal text-white outline-none focus:border-[#D4AF37]">{categories.map((item) => <option key={item} value={item}>{categoryLabel(item)}</option>)}</select></label>
+              <label htmlFor="offer-category" className="text-sm font-semibold text-gray-300">Freelancer category<select id="offer-category" value={categories.includes(selectedCategory) ? selectedCategory : categories[0] ?? ''} onChange={(event) => setCategory(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 font-normal text-white outline-none focus:border-[#D4AF37]">{categories.map((item) => <option key={item} value={item}>{categoryLabel(item)}</option>)}</select></label>
               <label htmlFor="offer-amount" className="text-sm font-semibold text-gray-300">Total client offer amount<input id="offer-amount" type="number" min="0" step="0.01" inputMode="decimal" value={offer} onChange={(event) => setOffer(event.target.value)} placeholder="Example: 2500" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 font-normal text-white outline-none focus:border-[#D4AF37]" /></label>
               <div className="grid gap-5 sm:grid-cols-2">
                 <label htmlFor="hours-per-day" className="text-sm font-semibold text-gray-300">Working hours per day<input id="hours-per-day" type="number" min="0.1" max="24" step="0.5" inputMode="decimal" value={hoursPerDay} onChange={(event) => setHoursPerDay(event.target.value)} placeholder="Example: 6" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 font-normal text-white outline-none focus:border-[#D4AF37]" /></label>
@@ -106,9 +121,9 @@ export default function OfferAnalysisPage() {
           </div>
 
           <div aria-live="polite" className="rounded-2xl border border-[#D4AF37]/50 bg-[#0b0b0b] p-6 sm:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">Financial assessment</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">Financial assessment · {categoryLabel(selectedCategory)}</p>
             <p className={`mt-4 text-xl font-semibold leading-8 ${statusTone}`}>{statusText}</p>
-            <p className="mt-5 text-sm leading-6 text-gray-400">{analysis.complete ? `At ${Number(hoursPerDay)} hours per day and ${Number(daysPerWeek)} days per week, this project is estimated at ${analysis.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours. The offer works out to ${money(analysis.hourlyRate)} per hour.` : 'Enter a non-negative offer, duration, and valid workload to calculate an assessment.'}</p>
+            <p className="mt-5 text-sm leading-6 text-gray-400">{analysis.complete ? `For your ${categoryLabel(selectedCategory)} work, at ${Number(hoursPerDay)} hours per day and ${Number(daysPerWeek)} days per week, this project is estimated at ${analysis.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours. The offer works out to ${money(analysis.hourlyRate)} per hour.` : 'Enter a non-negative offer, duration, and valid workload to calculate an assessment.'}</p>
           </div>
         </section>
 
@@ -138,6 +153,7 @@ export default function OfferAnalysisPage() {
         <section className="mt-6 rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6 sm:p-8">
           <h2 className="text-xl font-bold">Runway effect, separate from profitability</h2>
           <p className="mt-3 text-sm leading-7 text-gray-400">Your current runway is <strong className="text-white">{runwayLabel(analysis.currentRunway)}</strong>. If the full offer is paid and its estimated project expenses are subtracted before the remaining amount is added to savings, runway becomes <strong className="text-white">{analysis.complete ? runwayLabel(analysis.runwayAfterOffer) : '—'}</strong>.</p>
+          <p className="mt-4 text-sm leading-7 text-gray-300">{monthlyPositionText}</p>
           <p className="mt-4 text-sm leading-7 text-gray-500">Assumptions: a month is 4.345 weeks or 30.4375 days; project expenses scale with duration. This is an end-of-project estimate, not a payment-timing forecast, and excludes taxes, unpaid work, and other costs.</p>
         </section>
       </div>

@@ -66,8 +66,8 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen min-h-[100dvh] w-full bg-[#050505] px-4 py-6 text-white sm:px-8 sm:py-8">
-      <div className="mx-auto min-h-[calc(100dvh-3rem)] w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0a0a0a]">
+    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#050505] px-4 py-6 text-white sm:px-8 sm:py-8">
+      <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/10 bg-[#0a0a0a]">
         <header className="w-full px-5 py-5 sm:px-10 sm:py-7">
           <Link href="/" className="inline-flex items-center gap-2">
             <span className="flex items-end gap-1" aria-hidden="true"><span className="h-5 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-7 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-9 w-2 rounded-sm bg-[#D4AF37]" /></span>

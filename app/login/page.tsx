@@ -102,7 +102,7 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen min-h-[100dvh] w-full items-center justify-center bg-[#050505] px-4 py-8 text-white sm:px-8">
+    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#050505] px-4 py-8 text-white sm:px-8">
       <div className="w-full max-w-md">
         <Link href="/" className="mb-8 flex items-center justify-center gap-2 sm:justify-start">
           <div className="flex items-end gap-1" aria-hidden="true">
