@@ -37,8 +37,8 @@ function toAccountSecurityError(error: { message: string; code?: string; status?
     return new Error('Too many security attempts. Please wait before trying again.')
   }
 
-  if (error.code === 'otp_expired' || error.code === 'otp_disabled' || error.code === 'invalid_otp' || error.code === 'otp_not_found') {
-    return new Error('That verification code could not be confirmed. Check the code or request a new one.')
+  if (error.code === 'otp_expired' || error.code === 'otp_disabled' || error.code === 'invalid_otp' || error.code === 'otp_not_found' || error.code === 'bad_nonce' || error.code === 'invalid_grant' || error.code === 'invalid_credentials' || error.message.toLowerCase().includes('nonce')) {
+    return new Error('That verification code is incorrect or expired. Check the code or request a new one.')
   }
 
   if (error.code === 'weak_password') {
@@ -66,10 +66,17 @@ export async function requestReauthentication() {
 
 export async function completeReauthentication(email: string, token: string) {
   const supabase = createClient()
-  const { error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: 'reauthentication',
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user?.email || user.email.toLowerCase() !== email.trim().toLowerCase()) {
+    throw new Error('Your signed-in account changed. Refresh the page and request a new verification code.')
+  }
+
+  // Supabase reauthentication codes are nonces for updateUser, not verifyOtp codes.
+  // Re-submit existing metadata unchanged to validate the nonce without changing the password or identity.
+  const { error } = await supabase.auth.updateUser({
+    data: user.user_metadata ?? {},
+    nonce: token.trim(),
   })
 
   if (error) {

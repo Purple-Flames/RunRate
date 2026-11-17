@@ -78,6 +78,7 @@ export default function AccountSettingsPage() {
   }
 
   const verifySecurityCode = async () => {
+    if (busy) return
     if (!reauthToken.trim()) {
       setError('Enter the verification code from your email.')
       return
@@ -171,7 +172,7 @@ export default function AccountSettingsPage() {
                 <div className="grid gap-3">
                   <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">
                     Verification code sent to {reauthEmail}
-                    <input id="reauth-token" inputMode="numeric" autoComplete="one-time-code" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" />
+                    <input id="reauth-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" />
                   </label>
                   <button type="button" onClick={verifySecurityCode} disabled={busy || !reauthToken.trim()} className="min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
                     {busy ? 'Verifying…' : 'Verify and continue'}

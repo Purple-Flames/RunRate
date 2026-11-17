@@ -55,7 +55,7 @@ export default function RunwayPage() {
           ) : (
             <p className="mt-3 break-words text-4xl font-bold text-[#D4AF37] sm:text-5xl">{runway.toFixed(1)} months</p>
           )}
-          <p className="mt-4 text-sm leading-6 text-gray-400">{burn > 0 ? `Your current estimated monthly shortfall is ${formatCurrency(burn, currency)}. This estimate assumes income and expenses stay constant; it does not include taxes, irregular bills, or changes in client work.` : `Your saved income currently covers your monthly expenses${incomeSurplus > 0 ? `, with an estimated ${formatCurrency(incomeSurplus, currency)} left over each month` : ''}. Based on these figures, your savings are not being drawn down each month.`}</p>
+          <p className="mt-4 text-sm leading-6 text-gray-400">{burn > 0 ? `Your monthly expenses are ${formatCurrency(burn, currency)} higher than your income. You would need to use about ${formatCurrency(burn, currency)} from savings each month to cover that shortfall. This estimate assumes income and expenses stay constant; it does not include taxes, irregular bills, or changes in client work.` : incomeSurplus > 0 ? `Your monthly income covers your expenses, leaving ${formatCurrency(incomeSurplus, currency)} each month. You are not currently drawing down your savings to meet these expenses. Savings remain available as a separate buffer for emergencies or unexpected costs.` : 'Your monthly income covers your expenses exactly, with no monthly surplus. You are not currently drawing down your savings to meet these expenses. Savings remain available as a separate buffer for emergencies or unexpected costs.'}</p>
         </section>
       </div>
     </main>

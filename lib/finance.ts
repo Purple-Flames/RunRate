@@ -64,6 +64,7 @@ export function analyzeOffer(input: OfferAnalysisInput) {
     && Number.isInteger(daysPerWeek)
     && daysPerWeek > 0
     && daysPerWeek <= 7
+    && (durationUnit === 'days' || durationUnit === 'weeks' || durationUnit === 'months')
 
   const months = durationUnit === 'days'
     ? duration / MONTH_DAYS
