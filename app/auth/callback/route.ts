@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
   const next = requestUrl.searchParams.get('next')
-  const safeNext = next === '/dashboard' || next === '/onboarding' ? next : null
+  const safeNext = next === '/dashboard' || next === '/onboarding' || next === '/dashboard/settings' || next === '/reset-password' ? next : null
   const cookieStore = await cookies()
 
   if (!code) {

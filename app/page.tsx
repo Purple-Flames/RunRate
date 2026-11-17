@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 function RunwayGraph() {
   return (
@@ -152,10 +153,10 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#050505] text-white overflow-x-hidden">
       {/* Navigation */}
-      <header className="homepage-header border-b border-white/10">
+      <header className="homepage-header sticky top-0 z-50 border-b border-white/10 bg-[#050505]/95 backdrop-blur">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <nav className="flex h-20 items-center justify-between">
-            <a href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="flex items-end gap-1">
                 <span className="w-2 h-5 rounded-sm bg-[#D4AF37]" />
                 <span className="w-2 h-8 rounded-sm bg-[#D4AF37]" />
@@ -170,7 +171,7 @@ export default function Home() {
                   Freelancer Pricing & Runway Tool
                 </p>
               </div>
-            </a>
+            </Link>
 
             <div className="hidden md:flex items-center gap-8 text-sm text-neutral-300">
               <a href="#features" className="hover:text-[#D4AF37]">
@@ -191,32 +192,39 @@ export default function Home() {
             </div>
 
             <div className="hidden sm:flex items-center gap-5">
-              <a
+              <Link
                 href="/login"
                 className="text-sm text-neutral-300 hover:text-white"
               >
                 Log in
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/signup"
                 className="rounded-md bg-[#D4AF37] px-5 py-3 text-sm font-semibold text-black hover:bg-[#E5C45A]"
               >
                 Get Started
                 <span className="ml-2">→</span>
-              </a>
+              </Link>
             </div>
 
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="sm:hidden text-neutral-300 text-2xl"
-              aria-label="Open menu"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              aria-controls="homepage-mobile-menu"
             >
-              ☰
+              <span className="sr-only">{menuOpen ? "Close navigation" : "Open navigation"}</span>
+              <span aria-hidden="true" className="flex w-6 flex-col gap-1">
+                <span className="h-0.5 w-full rounded bg-current" />
+                <span className="h-0.5 w-full rounded bg-current" />
+                <span className="h-0.5 w-full rounded bg-current" />
+              </span>
             </button>
           </nav>
 
           {menuOpen && (
-            <div className="sm:hidden border-t border-white/10 py-5 space-y-4">
+            <div id="homepage-mobile-menu" className="sm:hidden border-t border-white/10 py-5 space-y-4">
               <a href="#features" className="block text-neutral-300">
                 Features
               </a>
@@ -226,15 +234,15 @@ export default function Home() {
               <a href="#pricing" className="block text-neutral-300">
                 Pricing
               </a>
-              <a href="/login" className="block text-neutral-300">
+              <Link href="/login" className="block text-neutral-300">
                 Log in
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/signup"
                 className="block w-fit rounded-md bg-[#D4AF37] px-5 py-3 font-semibold text-black"
               >
                 Get Started →
-              </a>
+              </Link>
             </div>
           )}
         </div>
@@ -266,13 +274,13 @@ export default function Home() {
               </p>
 
               <div className="mt-9 flex flex-col sm:flex-row gap-3">
-                <a
+                <Link
                   href="/signup"
                   className="inline-flex items-center justify-center rounded-md bg-[#D4AF37] px-7 py-4 font-semibold text-black hover:bg-[#E5C45A]"
                 >
                   Get Started Free
                   <span className="ml-3">→</span>
-                </a>
+                </Link>
 
                 <a
                   href="#how-it-works"
@@ -477,13 +485,13 @@ export default function Home() {
                 </p>
               </div>
 
-              <a
+              <Link
                 href="/signup"
                 className="shrink-0 rounded-md bg-[#D4AF37] px-7 py-4 font-semibold text-black hover:bg-[#E5C45A]"
               >
                 Get Started Free
                 <span className="ml-3">→</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
