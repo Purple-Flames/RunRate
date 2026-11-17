@@ -19,6 +19,73 @@ export async function signInWithGoogle() {
   }
 }
 
+function toAccountSecurityError(error: { message: string; code?: string; status?: number }) {
+  if (error.code === 'identity_already_exists' || error.code === 'identity_exists') {
+    return new Error('That Google identity is already linked to a different RunRate account. Sign in to that account instead; no profile or financial data was changed.')
+  }
+
+  if (error.code === 'reauthentication_needed' || error.status === 401) {
+    return new Error('Supabase requires you to reauthenticate before changing account sign-in methods. Please sign in again and retry.')
+  }
+
+  return new Error(error.message)
+}
+
+export async function requestReauthentication() {
+  const supabase = createClient()
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user?.email) {
+    throw new Error('We could not verify your account email. Please sign in again and retry.')
+  }
+
+  const { error } = await supabase.auth.reauthenticate()
+  if (error) {
+    throw toAccountSecurityError(error)
+  }
+
+  return user.email
+}
+
+export async function completeReauthentication(email: string, token: string) {
+  const supabase = createClient()
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token,
+    type: 'reauthentication',
+  })
+
+  if (error) {
+    throw toAccountSecurityError(error)
+  }
+}
+
+export async function linkGoogleIdentity() {
+  const supabase = createClient()
+  const { data, error } = await supabase.auth.linkIdentity({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/auth/callback`,
+    },
+  })
+
+  if (error) {
+    throw toAccountSecurityError(error)
+  }
+
+  return data
+}
+
+export async function setAccountPassword(password: string) {
+  const supabase = createClient()
+
+  const { error } = await supabase.auth.updateUser({ password })
+
+  if (error) {
+    throw toAccountSecurityError(error)
+  }
+}
+
 export async function signUpWithEmail(email: string, password: string, fullName: string) {
   const supabase = createClient()
 
