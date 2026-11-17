@@ -1,6 +1,6 @@
 'use client'
 
-import { FormEvent, Suspense, useState } from 'react'
+import { FormEvent, Suspense, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { mutate } from 'swr'
@@ -10,8 +10,9 @@ import { createClient } from '@/lib/supabase/client'
 function signInMessage(error: { message: string; status?: number; code?: string }) {
   if (error.status === 429) return 'Too many sign-in attempts. Please wait a little before trying again.'
   if (error.code === 'email_not_confirmed') return 'Check your email for a confirmation link before signing in.'
-  if (error.message.toLowerCase().includes('invalid login credentials')) return 'Invalid email or password.'
-  return 'We could not sign you in. Check your details and try again.'
+  if (error.code === 'invalid_credentials' || error.message.toLowerCase().includes('invalid login credentials')) return 'Invalid email or password.'
+  if (error.status && error.status >= 500) return 'The sign-in service is temporarily unavailable. Please try again shortly.'
+  return 'We could not sign you in. Please check your connection and try again.'
 }
 
 function LoginForm() {
@@ -26,47 +27,57 @@ function LoginForm() {
         ? 'We could not confirm your session. Please sign in again.'
         : ''
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
+  const loginInFlight = useRef(false)
   const [recovering, setRecovering] = useState(false)
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (loginInFlight.current) return
+
+    loginInFlight.current = true
     setBusy(true)
     setMessage('')
     setErrorMessage('')
-    const form = event.currentTarget
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) {
         setErrorMessage(signInMessage(error))
         return
       }
-      await mutate('runrate:authenticated-profile', undefined, { revalidate: false })
+      if (!data.session) {
+        setErrorMessage('Sign-in did not establish a session. Please try again.')
+        return
+      }
 
       const { data: { user }, error: userError } = await supabase.auth.getUser()
       if (userError || !user) {
-        setErrorMessage('We could not confirm your session. Please sign in again.')
+        setErrorMessage('We could not confirm your session. Please try again.')
         return
       }
 
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('category, currency, expenses, savings, income')
         .eq('id', user.id)
         .maybeSingle()
       if (profileError) {
         setErrorMessage('You are signed in, but we could not load your profile. Please try again.')
         return
       }
+
+      await mutate('runrate:authenticated-profile', { userId: user.id, profile }, { revalidate: false })
       router.replace(profile ? '/dashboard' : '/onboarding')
+      router.refresh()
     } catch {
-      setErrorMessage('We could not sign you in. Please check your connection and try again.')
+      setErrorMessage('We could not complete sign-in. Check your connection and try again.')
     } finally {
+      loginInFlight.current = false
       setBusy(false)
     }
   }
@@ -102,9 +113,20 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#050505] px-4 py-8 text-white sm:px-8">
-      <div className="w-full max-w-md">
-        <Link href="/" className="mb-8 flex items-center justify-center gap-2 sm:justify-start">
+    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#050505] px-4 py-8 text-white sm:px-8 lg:py-16">
+      <div className="grid w-full max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-20">
+        <section className="hidden max-w-xl lg:block" aria-labelledby="login-promo-title">
+          <Link href="/" className="mb-12 inline-flex items-center gap-2">
+            <span className="flex items-end gap-1" aria-hidden="true"><span className="h-5 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-8 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-11 w-2 rounded-sm bg-[#D4AF37]" /></span>
+            <span className="text-lg font-bold">Run<span className="text-[#D4AF37]">Rate</span></span>
+          </Link>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">Financial clarity for independent work</p>
+          <h2 id="login-promo-title" className="mt-5 text-5xl font-bold leading-tight">Make your next move with confidence.</h2>
+          <p className="mt-6 max-w-lg text-lg leading-8 text-neutral-400">Understand your runway, price your work, and choose opportunities that support the life you&apos;re building.</p>
+        </section>
+
+        <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-xl">
+        <Link href="/" className="mb-8 flex items-center justify-center gap-2 sm:justify-start lg:hidden">
           <div className="flex items-end gap-1" aria-hidden="true">
             <span className="h-5 w-2 rounded-sm bg-[#D4AF37]" />
             <span className="h-8 w-2 rounded-sm bg-[#D4AF37]" />
@@ -127,9 +149,9 @@ function LoginForm() {
                 <label className="text-sm font-medium" htmlFor="password">Password</label>
                 <button type="button" onClick={handlePasswordRecovery} disabled={recovering || busy} className="min-h-11 text-sm text-[#D4AF37] underline-offset-4 hover:underline disabled:opacity-50">{recovering ? 'Sending…' : 'Forgot password?'}</button>
               </div>
-              <input id="password" type="password" name="password" autoComplete="current-password" required className="min-h-11 w-full rounded-lg border border-white/10 bg-[#111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]" />
+              <input id="password" type="password" name="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-lg border border-white/10 bg-[#111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]" />
             </div>
-            <button type="submit" disabled={busy || recovering} className="min-h-11 w-full rounded-lg bg-[#D4AF37] px-4 py-3 font-semibold text-black hover:bg-[#e1bd43] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Signing in…' : 'Log in'}</button>
+            <button type="submit" disabled={busy || recovering} aria-busy={busy} className="min-h-11 w-full rounded-lg bg-[#D4AF37] px-4 py-3 font-semibold text-black hover:bg-[#e1bd43] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Signing in…' : 'Log in'}</button>
           </form>
 
           <div className="my-6 flex items-center gap-3">
@@ -142,6 +164,7 @@ function LoginForm() {
           {message && <p role="status" aria-live="polite" className="mt-4 rounded-lg border border-green-900 bg-green-950/30 p-3 text-sm text-green-200">{message}</p>}
           {(errorMessage || callbackMessage) && <p role="alert" className="mt-4 rounded-lg border border-red-900 bg-red-950/30 p-3 text-sm text-red-200">{errorMessage || callbackMessage}</p>}
           <p className="mt-6 text-center text-sm text-neutral-400">Don&apos;t have an account? <Link href="/signup" className="text-[#D4AF37] hover:underline">Sign up</Link></p>
+        </div>
         </div>
       </div>
     </main>
