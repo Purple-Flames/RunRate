@@ -79,11 +79,6 @@ export default function AccountSettingsPage() {
   }
 
   const handleLinkGoogle = async () => {
-    if (!reauthenticated) {
-      setError('Verify your identity before linking Google.')
-      return
-    }
-
     setBusy(true)
     setMessage('')
     setError('')
@@ -126,7 +121,7 @@ export default function AccountSettingsPage() {
       setReauthToken('')
       setReauthPending(false)
       setReauthenticated(true)
-      setMessage('Supabase confirmed the password update. The verification code was submitted as the password-update nonce. You can now use email and password to sign in or link Google.')
+      setMessage('Supabase confirmed the password update. The verification code was submitted as the password-update nonce. You can now use email and password to sign in.')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Password could not be updated.')
     } finally {
@@ -147,7 +142,7 @@ export default function AccountSettingsPage() {
         <div className="mt-8 grid gap-6">
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Verify before changing sign-in methods</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">The eight-digit Supabase reauthentication code is submitted as the password-update nonce together with your new password in one operation. Google linking stays unavailable until this operation succeeds.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">The eight-digit Supabase reauthentication code is submitted as the password-update nonce together with your new password in one operation. Google linking is available independently and does not require changing your password.</p>
             <div className="mt-5 grid gap-3 sm:max-w-md">
               <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">
                 {identitiesLoading ? 'Checking account…' : busy ? 'Please wait…' : reauthPending ? 'Send a new verification code' : 'Send verification code'}
@@ -159,9 +154,9 @@ export default function AccountSettingsPage() {
 
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Google sign-in</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">Link Google to this signed-in account. RunRate will not merge another account or profile based on an email address.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">Link Google directly to this signed-in account. No password change is needed. RunRate will not merge another account or profile based on an email address.</p>
             <p className="mt-3 text-sm text-gray-300">{identitiesLoading ? 'Checking linked accounts…' : hasGoogle ? 'Google is linked to this account.' : 'Google is not linked.'}</p>
-            <button type="button" onClick={handleLinkGoogle} disabled={busy || identitiesLoading || !accountAvailable || hasGoogle || !reauthenticated} className="mt-5 min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" onClick={handleLinkGoogle} disabled={busy || identitiesLoading || !accountAvailable || hasGoogle} className="mt-5 min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
               {hasGoogle ? 'Google is linked' : busy ? 'Preparing secure link…' : 'Link Google account'}
             </button>
           </section>
