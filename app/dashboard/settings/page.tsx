@@ -5,11 +5,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
-  completeReauthentication,
   linkGoogleIdentity,
   requestReauthentication,
-  setAccountPassword,
+  setAccountPasswordWithReauthentication,
 } from '@/lib/supabase/auth'
+import { isValidReauthenticationCode, REAUTHENTICATION_CODE_LENGTH } from '@/lib/supabase/reauthentication-code'
 
 export default function AccountSettingsPage() {
   const router = useRouter()
@@ -64,37 +64,15 @@ export default function AccountSettingsPage() {
     setMessage('')
     setError('')
     setReauthenticated(false)
+    setReauthPending(false)
     setReauthToken('')
     try {
       const email = await requestReauthentication()
       setReauthEmail(email)
       setReauthPending(true)
-      setMessage('If this email can receive verification codes, one has been sent. Enter it below to verify your identity.')
+      setMessage('If this account can receive verification codes, one has been sent. Enter all 8 digits with your new password below.')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'We could not start verification.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const verifySecurityCode = async () => {
-    if (busy) return
-    if (!reauthToken.trim()) {
-      setError('Enter the verification code from your email.')
-      return
-    }
-
-    setBusy(true)
-    setMessage('')
-    setError('')
-    try {
-      await completeReauthentication(reauthEmail, reauthToken.trim())
-      setReauthPending(false)
-      setReauthenticated(true)
-      setReauthToken('')
-      setMessage('Identity verified. You can now choose a sign-in method to update.')
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'The verification code could not be confirmed.')
     } finally {
       setBusy(false)
     }
@@ -122,6 +100,14 @@ export default function AccountSettingsPage() {
     setMessage('')
     setError('')
 
+    if (!reauthPending) {
+      setError('Request a new verification code before changing your password.')
+      return
+    }
+    if (!isValidReauthenticationCode(reauthToken)) {
+      setError('Enter the complete 8-digit verification code from your email.')
+      return
+    }
     if (password.length < 8) {
       setError('Use at least 8 characters for your password.')
       return
@@ -130,19 +116,17 @@ export default function AccountSettingsPage() {
       setError('Passwords do not match.')
       return
     }
-    if (!reauthenticated) {
-      setError(reauthPending ? 'Verify the code above before updating your password.' : 'Verify your identity before updating your password.')
-      return
-    }
 
     setBusy(true)
     try {
-      await setAccountPassword(password)
+      await setAccountPasswordWithReauthentication(password, reauthEmail, reauthToken)
       setHasPassword(true)
       setPassword('')
       setConfirmPassword('')
-      setReauthenticated(false)
-      setMessage('Your password is set. You can now use email and password to sign in.')
+      setReauthToken('')
+      setReauthPending(false)
+      setReauthenticated(true)
+      setMessage('Supabase confirmed the password update. The verification code was submitted as the password-update nonce. You can now use email and password to sign in or link Google.')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Password could not be updated.')
     } finally {
@@ -163,23 +147,13 @@ export default function AccountSettingsPage() {
         <div className="mt-8 grid gap-6">
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Verify before changing sign-in methods</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">Verification is separate from changing your password. You can confirm your identity first, then choose whether to link Google or set a password.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">The eight-digit Supabase reauthentication code is submitted as the password-update nonce together with your new password in one operation. Google linking stays unavailable until this operation succeeds.</p>
             <div className="mt-5 grid gap-3 sm:max-w-md">
               <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">
                 {identitiesLoading ? 'Checking account…' : busy ? 'Please wait…' : reauthPending ? 'Send a new verification code' : 'Send verification code'}
               </button>
-              {reauthPending && (
-                <div className="grid gap-3">
-                  <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">
-                    Verification code sent to {reauthEmail}
-                    <input id="reauth-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} pattern="[0-9]{6}" value={reauthToken} onChange={(event) => setReauthToken(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" />
-                  </label>
-                  <button type="button" onClick={verifySecurityCode} disabled={busy || !reauthToken.trim()} className="min-h-11 rounded-lg bg-[#D4AF37] px-4 py-3 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-50">
-                    {busy ? 'Verifying…' : 'Verify and continue'}
-                  </button>
-                </div>
-              )}
-              {reauthenticated && <p className="text-sm text-emerald-300">Identity verified. No password change is required to continue.</p>}
+              {reauthPending && <p className="text-sm text-gray-300">A code was requested for {reauthEmail}. Enter all 8 digits with your password below.</p>}
+              {reauthenticated && <p className="text-sm text-emerald-300">Supabase confirmed your password update using the verification code. Google linking is available for this session.</p>}
             </div>
           </section>
 
@@ -194,11 +168,12 @@ export default function AccountSettingsPage() {
 
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Email and password</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">{hasPassword ? 'Update the password for this account.' : 'Set a password to enable email and password sign-in.'} Verification is required first.</p>
+            <p className="mt-2 text-sm leading-6 text-gray-400">{hasPassword ? 'Update the password for this account.' : 'Set a password to enable email and password sign-in.'} Request a fresh code above, then submit it with your password so Supabase can validate the nonce in the password update.</p>
             <form onSubmit={handlePassword} className="mt-5 grid gap-4 sm:max-w-md">
+              {reauthPending && <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">Eight-digit verification code<input id="reauth-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={REAUTHENTICATION_CODE_LENGTH} pattern={`[0-9]{${REAUTHENTICATION_CODE_LENGTH}}`} required value={reauthToken} onChange={(event) => setReauthToken(event.target.value.replace(/\D/g, '').slice(0, REAUTHENTICATION_CODE_LENGTH))} aria-describedby="reauth-token-help" className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" /><span id="reauth-token-help" className="text-xs text-gray-400">Enter all 8 digits. Incorrect, expired, or reused codes must be rejected by Supabase.</span></label>}
               <label className="grid gap-2 text-sm font-medium" htmlFor="new-password">New password<input id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" /></label>
               <label className="grid gap-2 text-sm font-medium" htmlFor="confirm-password">Confirm password<input id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#4b4024] bg-black px-3 py-3 text-white outline-none focus:border-[#D4AF37]" /></label>
-              <button type="submit" disabled={busy || identitiesLoading || !accountAvailable || !password || !confirmPassword} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Updating password…' : hasPassword ? 'Update password' : 'Set password'}</button>
+              <button type="submit" disabled={busy || identitiesLoading || !accountAvailable || !reauthPending || !password || !confirmPassword} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Updating password…' : hasPassword ? 'Update password' : 'Set password'}</button>
             </form>
           </section>
 

@@ -1,4 +1,5 @@
 import { createClient } from './client'
+import { isValidReauthenticationCode } from './reauthentication-code'
 
 function authCallbackUrl(next?: string) {
   const redirectOrigin = process.env.NODE_ENV === 'development'
@@ -52,8 +53,8 @@ export async function requestReauthentication() {
   const supabase = createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-  if (userError || !user?.email) {
-    throw new Error('We could not verify your account email. Please sign in again and retry.')
+  if (userError || !user?.email || !user.email_confirmed_at) {
+    throw new Error('Confirm the email address on this account before requesting a security code.')
   }
 
   const { error } = await supabase.auth.reauthenticate()
@@ -64,7 +65,11 @@ export async function requestReauthentication() {
   return user.email
 }
 
-export async function completeReauthentication(email: string, token: string) {
+export async function setAccountPasswordWithReauthentication(password: string, email: string, token: string) {
+  if (!isValidReauthenticationCode(token)) {
+    throw new Error('Enter the complete 8-digit verification code from your email.')
+  }
+
   const supabase = createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
 
@@ -72,15 +77,16 @@ export async function completeReauthentication(email: string, token: string) {
     throw new Error('Your signed-in account changed. Refresh the page and request a new verification code.')
   }
 
-  // Supabase reauthentication codes are nonces for updateUser, not verifyOtp codes.
-  // Re-submit existing metadata unchanged to validate the nonce without changing the password or identity.
-  const { error } = await supabase.auth.updateUser({
-    data: user.user_metadata ?? {},
-    nonce: token.trim(),
+  const { data, error } = await supabase.auth.updateUser({
+    password,
+    nonce: token,
   })
 
   if (error) {
     throw toAccountSecurityError(error)
+  }
+  if (!data.user) {
+    throw new Error('Supabase did not confirm the password update. Please try again.')
   }
 }
 
@@ -100,7 +106,7 @@ export async function linkGoogleIdentity() {
   return data
 }
 
-export async function setAccountPassword(password: string) {
+export async function setRecoveredAccountPassword(password: string) {
   const supabase = createClient()
 
   const { error } = await supabase.auth.updateUser({ password })

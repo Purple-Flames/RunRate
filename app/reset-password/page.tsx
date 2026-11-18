@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { setAccountPassword } from '@/lib/supabase/auth'
+import { setRecoveredAccountPassword } from '@/lib/supabase/auth'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
 
     setBusy(true)
     try {
-      await setAccountPassword(password)
+      await setRecoveredAccountPassword(password)
       router.replace('/dashboard')
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'This reset link may have expired. Request a new one and try again.')
