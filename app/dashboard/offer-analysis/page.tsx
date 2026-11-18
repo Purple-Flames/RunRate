@@ -51,8 +51,10 @@ export default function OfferAnalysisPage() {
   const selectedCategory = category ?? (savedCategory || categories[0] || '')
   const currency = profile.currency || 'NGN'
   const monthlyExpenses = Math.max(0, Number(profile.expenses) || 0)
-  const monthlyIncome = Math.max(0, Number(profile.income) || 0)
+  const monthlyIncomeCurrent = Math.max(0, Number(profile.income) || 0)
+  const monthlyIncomeTarget = profile.target_monthly_income == null ? null : Math.max(0, Number(profile.target_monthly_income) || 0)
   const savings = Math.max(0, Number(profile.savings) || 0)
+  const targetMissing = monthlyIncomeTarget === null
   const analysis = analyzeOffer({
     offer: numericInput(offer),
     duration: numericInput(duration),
@@ -60,7 +62,8 @@ export default function OfferAnalysisPage() {
     hoursPerDay: numericInput(hoursPerDay),
     daysPerWeek: numericInput(daysPerWeek),
     monthlyExpenses,
-    monthlyIncomeTarget: monthlyIncome,
+    monthlyIncomeCurrent,
+    monthlyIncomeTarget,
     savings,
   })
   const categoryLabel = (value: string) => value ? value.charAt(0).toUpperCase() + value.slice(1) : value
@@ -68,12 +71,14 @@ export default function OfferAnalysisPage() {
   const signedMoney = (value: number) => value < 0 ? `-${money(value)}` : money(value)
   const runwayLabel = (value: number | null) => value === null ? 'Income covers monthly expenses; savings are not being drawn down' : `${value.toFixed(1)} months`
   const monthlyPositionText = analysis.monthlyBurn > 0
-    ? `Your monthly income is ${money(analysis.monthlyBurn)} below expenses, so you would need to use savings to cover that amount each month.`
-    : monthlyIncome > monthlyExpenses
-      ? `Your monthly income covers expenses with ${money(monthlyIncome - monthlyExpenses)} left each month. Savings are not needed for these expenses and remain available for emergencies.`
-      : 'Your monthly income covers expenses exactly, with no surplus. Savings are not needed for these expenses and remain available for emergencies.'
-  const statusText = analysis.status === 'below-expenses'
-    ? 'This offer does not cover the expenses allocated to the project period.'
+    ? `Your current average monthly income is ${money(analysis.monthlyBurn)} below expenses, so you would need to use savings to cover that amount each month.`
+    : monthlyIncomeCurrent > monthlyExpenses
+      ? `Your current average monthly income covers expenses with ${money(monthlyIncomeCurrent - monthlyExpenses)} left each month. Savings are not needed for these expenses and remain available for emergencies.`
+      : 'Your current average monthly income covers expenses exactly, with no surplus. Savings are not needed for these expenses and remain available for emergencies.'
+  const statusText = targetMissing
+    ? 'Set a Target Monthly Income in your profile before comparing this offer to your income goal.'
+    : analysis.status === 'below-expenses'
+      ? 'This offer does not cover the expenses allocated to the project period.'
     : analysis.status === 'below-target'
       ? 'This offer covers allocated expenses but falls below your saved monthly income target.'
       : analysis.status === 'meets-target'
@@ -82,8 +87,10 @@ export default function OfferAnalysisPage() {
           ? 'This offer exceeds your saved monthly income target.'
           : 'Complete the workload and duration fields to assess this offer.'
   const statusTone = analysis.status === 'below-expenses' ? 'text-red-300' : analysis.status === 'incomplete' ? 'text-gray-400' : 'text-[#D4AF37]'
-  const recommendation = !analysis.complete
-    ? 'Enter a non-negative offer, project duration, daily hours, and working days to get a practical comparison.'
+  const recommendation = targetMissing
+    ? 'Add your Target Monthly Income in Edit Profile before using target-based offer comparisons. Your current income and runway remain separate.'
+    : !analysis.complete
+      ? 'Enter a non-negative offer, project duration, daily hours, and working days to get a practical comparison.'
     : analysis.status === 'below-expenses'
       ? `The offer is ${money(Math.abs(analysis.minimumDifference))} below the estimated project expenses. Consider negotiating at least ${money(analysis.minimumOffer)} or adjusting the scope or duration.`
       : analysis.status === 'below-target'
@@ -101,6 +108,12 @@ export default function OfferAnalysisPage() {
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Should you take this offer?</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-gray-400">Compare a client offer with your monthly financial baseline and the hours required to deliver the project.</p>
         </header>
+
+        <section aria-label="Saved income profile" className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-xl border border-[#2a2a2a] bg-[#0b0b0b] p-5"><p className="text-sm text-gray-400">Current Average Monthly Income</p><p className="mt-2 text-xl font-semibold">{money(monthlyIncomeCurrent)}</p><p className="mt-1 text-xs text-gray-500">Used for current financial runway, not treated as guaranteed project income.</p></div>
+          <div className="rounded-xl border border-[#2a2a2a] bg-[#0b0b0b] p-5"><p className="text-sm text-gray-400">Target Monthly Income</p><p className="mt-2 text-xl font-semibold text-[#D4AF37]">{monthlyIncomeTarget === null ? 'Not set' : money(monthlyIncomeTarget)}</p><p className="mt-1 text-xs text-gray-500">Used to calculate your target offer and target hourly rate.</p></div>
+        </section>
+        {targetMissing && <p role="status" className="mt-4 rounded-xl border border-[#D4AF37]/50 bg-[#11100b] p-4 text-sm leading-6 text-gray-200">Add a Target Monthly Income in <Link href="/onboarding" className="font-semibold text-[#D4AF37] underline">Edit Profile</Link> before target-based calculations can be used.</p>}
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6 sm:p-8">
@@ -141,7 +154,7 @@ export default function OfferAnalysisPage() {
 
         <section className="mt-6 rounded-2xl border border-[#D4AF37]/60 bg-[#0b0b0b] p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-[#D4AF37]">What would make this offer worthwhile?</h2>
-          <p className="mt-3 text-sm leading-6 text-gray-400">The minimum covers monthly expenses prorated to the project duration. The target uses your saved average monthly income, prorated to the same period; it remains separate from the expense minimum.</p>
+          <p className="mt-3 text-sm leading-6 text-gray-400">The minimum covers monthly expenses prorated to the project duration. The target uses your saved Target Monthly Income, prorated to the same period; it is a goal, not guaranteed income, and remains separate from current income and the expense minimum.</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <ComparisonCard label="Client offer" amount={analysis.offer} difference={null} complete={analysis.complete} money={money} />
             <ComparisonCard label="Minimum viable offer" amount={analysis.minimumOffer} difference={analysis.minimumDifference} complete={analysis.complete} money={money} />

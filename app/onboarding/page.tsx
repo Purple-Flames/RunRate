@@ -18,6 +18,7 @@ export default function OnboardingPage() {
   const [expenses, setExpenses] = useState('')
   const [savings, setSavings] = useState('')
   const [income, setIncome] = useState('')
+  const [targetIncome, setTargetIncome] = useState('')
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -35,6 +36,7 @@ export default function OnboardingPage() {
     setExpenses(String(profile.expenses ?? ''))
     setSavings(String(profile.savings ?? ''))
     setIncome(String(profile.income ?? ''))
+    setTargetIncome(profile.target_monthly_income == null ? '' : String(profile.target_monthly_income))
     initialized.current = true
   }, [account?.profile])
 
@@ -63,7 +65,7 @@ export default function OnboardingPage() {
       return
     }
 
-    const values = [expenses, savings, income].map((value) => value.trim() === '' ? Number.NaN : Number(value))
+    const values = [expenses, savings, income, targetIncome].map((value) => value.trim() === '' ? Number.NaN : Number(value))
     if (values.some((value) => !Number.isFinite(value) || value < 0)) {
       setFormError('Enter a valid non-negative amount for each financial field.')
       return
@@ -78,6 +80,7 @@ export default function OnboardingPage() {
         expenses: values[0],
         savings: values[1],
         income: values[2],
+        target_monthly_income: values[3],
       }
       const { error } = account.profile
         ? await supabase.from('profiles').update(profileValues).eq('id', account.userId)
@@ -86,11 +89,14 @@ export default function OnboardingPage() {
 
       await mutate({
         userId: account.userId,
-        profile: { category: categories, currency, expenses: values[0], savings: values[1], income: values[2] },
+        profile: { category: categories, currency, expenses: values[0], savings: values[1], income: values[2], target_monthly_income: values[3] },
       }, { revalidate: false })
       router.push('/dashboard')
-    } catch {
-      setFormError('We could not save your profile. Check your connection and try again.')
+    } catch (caught) {
+      const code = typeof caught === 'object' && caught !== null && 'code' in caught ? String(caught.code) : ''
+      setFormError(code === '42703' || code === 'PGRST204'
+        ? 'The Target Monthly Income field is not available in the database yet. The included migration must be applied before this profile can be saved.'
+        : 'We could not save your profile. Check your connection and try again.')
     } finally {
       setBusy(false)
     }
@@ -153,10 +159,13 @@ export default function OnboardingPage() {
         </div>
 
         <div className="mt-8 grid w-full gap-6 sm:grid-cols-2">
-          <FinancialInput id="expenses" label="Monthly expenses" value={expenses} onChange={setExpenses} />
-          <FinancialInput id="savings" label="Current savings" value={savings} onChange={setSavings} />
+          <FinancialInput id="expenses" label="Monthly expenses" value={expenses} onChange={setExpenses} currency={currency} />
+          <FinancialInput id="savings" label="Current savings" value={savings} onChange={setSavings} currency={currency} />
         </div>
-        <div className="mt-6 max-w-xl"><FinancialInput id="income" label="Average monthly income" value={income} onChange={setIncome} /></div>
+        <div className="mt-6 grid w-full gap-6 sm:grid-cols-2">
+          <FinancialInput id="income" label="Current Average Monthly Income" help="How much do you currently earn on average each month?" value={income} onChange={setIncome} currency={currency} />
+          <FinancialInput id="target-income" label="Target Monthly Income" help="How much would you like to earn each month?" value={targetIncome} onChange={setTargetIncome} currency={currency} />
+        </div>
 
         {formError && <p role="alert" className="mt-6 rounded-lg border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{formError}</p>}
         <div className="mt-8 flex w-full justify-end">
@@ -167,11 +176,15 @@ export default function OnboardingPage() {
   )
 }
 
-function FinancialInput({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
+function FinancialInput({ id, label, help, value, onChange, currency }: { id: string; label: string; help?: string; value: string; onChange: (value: string) => void; currency: string }) {
   return (
     <div>
       <label htmlFor={id} className="block text-sm font-bold">{label}</label>
-      <input id={id} value={value} onChange={(event) => onChange(event.target.value)} type="number" min="0" step="0.01" required inputMode="decimal" placeholder="Enter an amount" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-sm text-white placeholder:text-[#777]" />
+      {help && <p id={`${id}-help`} className="mt-1 text-xs leading-5 text-gray-400">{help}</p>}
+      <div className="mt-3 flex min-h-12 items-center rounded-xl border border-[#444] bg-[#111] focus-within:border-[#D4AF37]">
+        <span aria-hidden="true" className="px-4 text-sm text-gray-400">{currency === 'USD' ? '$' : '₦'}</span>
+        <input id={id} aria-describedby={help ? `${id}-help` : undefined} value={value} onChange={(event) => onChange(event.target.value)} type="number" min="0" step="0.01" required inputMode="decimal" placeholder="Enter an amount" className="min-h-12 min-w-0 flex-1 rounded-r-xl bg-transparent pr-4 text-sm text-white outline-none placeholder:text-[#777]" />
+      </div>
     </div>
   )
 }

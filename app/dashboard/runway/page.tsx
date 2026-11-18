@@ -39,13 +39,14 @@ export default function RunwayPage() {
         <header className="mt-8">
           <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">Financial Runway</p>
           <h1 className="mt-2 text-3xl font-bold sm:text-4xl">How long can your savings support you?</h1>
-          <p className="mt-3 max-w-2xl text-base leading-7 text-gray-400">Runway uses your savings and monthly net burn: expenses minus average monthly income, with a floor of zero.</p>
+          <p className="mt-3 max-w-2xl text-base leading-7 text-gray-400">Runway uses actual current income—not your desired target—to calculate monthly surplus, shortfall, and savings drawdown.</p>
         </header>
 
-        <section aria-label="Financial profile" className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <section aria-label="Financial profile" className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Metric label="Current savings" value={formatCurrency(savings, currency)} highlighted />
           <Metric label="Monthly expenses" value={formatCurrency(expenses, currency)} />
-          <Metric label="Average monthly income" value={formatCurrency(income, currency)} />
+          <Metric label="Current average monthly income" value={formatCurrency(income, currency)} />
+          <Metric label="Target monthly income" value={profile.target_monthly_income == null ? 'Not set' : formatCurrency(Number(profile.target_monthly_income), currency)} />
         </section>
 
         <section aria-live="polite" className="mt-6 rounded-2xl border border-[#D4AF37]/40 bg-[#0b0b0b] p-6 sm:p-8">

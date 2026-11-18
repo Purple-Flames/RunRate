@@ -62,6 +62,8 @@ export default function DashboardPage() {
           </div>
         </header>
 
+        {profile.target_monthly_income == null && <p role="status" className="mt-6 rounded-xl border border-[#D4AF37]/50 bg-[#11100b] p-4 text-sm leading-6 text-gray-200">Add your Target Monthly Income in <Link href="/onboarding" className="font-semibold text-[#D4AF37] underline">Edit Profile</Link> to use target-based rate and offer calculations. Your current income and runway remain available.</p>}
+
         <section className="py-8">
           <div className="mb-6">
             <h2 className="text-2xl font-bold sm:text-3xl">Your profile</h2>
@@ -73,10 +75,8 @@ export default function DashboardPage() {
             <ProfileCard label="Currency" value={currency} highlighted />
             <ProfileCard label="Monthly Expenses" value={formatCurrency(Number(profile.expenses), currency)} />
             <ProfileCard label="Current Savings" value={formatCurrency(Number(profile.savings), currency)} />
-            <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6 sm:col-span-2 lg:col-span-4">
-              <p className="text-sm text-gray-400">Average Monthly Income</p>
-              <p className="mt-3 break-words text-2xl font-bold text-[#D4AF37]">{formatCurrency(Number(profile.income), currency)}</p>
-            </div>
+            <ProfileCard label="Current Average Monthly Income" value={formatCurrency(Number(profile.income), currency)} highlighted />
+            <ProfileCard label="Target Monthly Income" value={profile.target_monthly_income == null ? 'Not set' : formatCurrency(Number(profile.target_monthly_income), currency)} />
           </div>
         </section>
 

@@ -25,7 +25,9 @@ function LoginForm() {
       ? 'We could not complete sign-in. Please try again.'
       : callbackError === 'missing_session'
         ? 'We could not confirm your session. Please sign in again.'
-        : ''
+        : callbackError === 'google_oauth_cancelled'
+          ? 'Google authorization was cancelled or could not be completed. You can try again or use your email and password.'
+          : ''
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -61,11 +63,20 @@ function LoginForm() {
         return
       }
 
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('category, currency, expenses, savings, income')
+        .select('category, currency, expenses, savings, income, target_monthly_income')
         .eq('id', user.id)
         .maybeSingle()
+      if (profileError?.code === '42703' || profileError?.code === 'PGRST204') {
+        const legacyResult = await supabase
+          .from('profiles')
+          .select('category, currency, expenses, savings, income')
+          .eq('id', user.id)
+          .maybeSingle()
+        profile = legacyResult.data ? { ...legacyResult.data, target_monthly_income: null } : null
+        profileError = legacyResult.error
+      }
       if (profileError) {
         setErrorMessage('You are signed in, but we could not load your profile. Please try again.')
         return

@@ -21,7 +21,7 @@ export default function RateCalculatorPage() {
 
   useEffect(() => {
     if (!account?.profile || initialized.current) return
-    setTargetIncome(String(account.profile.income ?? ''))
+    setTargetIncome(account.profile.target_monthly_income == null ? '' : String(account.profile.target_monthly_income))
     initialized.current = true
   }, [account?.profile])
 
@@ -36,10 +36,11 @@ export default function RateCalculatorPage() {
   const currency = profile.currency || 'NGN'
   const monthlyExpenses = Math.max(0, Number(profile.expenses) || 0)
   const monthlySavings = Math.max(0, Number(profile.savings) || 0)
-  const incomeTarget = targetIncome.trim() === '' ? Number.NaN : Number(targetIncome)
+  const targetMissing = profile.target_monthly_income == null
+  const incomeTarget = targetMissing ? null : targetIncome.trim() === '' ? Number.NaN : Number(targetIncome)
   const billableHours = hours.trim() === '' ? Number.NaN : Number(hours)
   const rates = hourlyRates(monthlyExpenses, incomeTarget, billableHours)
-  const normalizedTarget = Number.isFinite(incomeTarget) ? Math.max(0, incomeTarget) : 0
+  const normalizedTarget = incomeTarget !== null && Number.isFinite(incomeTarget) ? Math.max(0, incomeTarget) : 0
 
   return (
     <main className="min-h-screen w-full bg-[#050505] px-5 py-8 text-white sm:px-8 lg:px-12">
@@ -53,9 +54,9 @@ export default function RateCalculatorPage() {
 
         <section className="mt-8 grid gap-5 md:grid-cols-2">
           <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
-            <label htmlFor="monthly-target" className="block text-sm font-semibold text-gray-300">Monthly income target</label>
+            <label htmlFor="monthly-target" className="block text-sm font-semibold text-gray-300">Target Monthly Income ({currency})</label>
             <input id="monthly-target" type="number" min="0" step="0.01" required inputMode="decimal" value={targetIncome} onChange={(event) => setTargetIncome(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#111] px-4 text-white outline-none focus:border-[#D4AF37]" />
-            <p className="mt-2 text-xs leading-5 text-gray-500">Prefilled from your saved average monthly income. This is treated as your desired gross monthly income, not take-home pay.</p>
+            <p className="mt-2 text-xs leading-5 text-gray-500">This is your desired gross monthly income goal, not take-home pay or income you currently receive. It is independent of Current Average Monthly Income.</p>
           </div>
           <div className="rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
             <label htmlFor="billable-hours" className="block text-sm font-semibold text-gray-300">Billable hours per month</label>
@@ -64,20 +65,22 @@ export default function RateCalculatorPage() {
           </div>
         </section>
 
-        {normalizedTarget < monthlyExpenses && <p className="mt-4 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-sm text-amber-200">Your income target is below monthly expenses. The suggested rate uses expenses as the minimum monthly revenue floor.</p>}
+        {targetMissing && <p role="status" className="mt-4 rounded-lg border border-[#D4AF37]/50 bg-[#11100b] p-4 text-sm leading-6 text-gray-200">Your Target Monthly Income is not set. Add it in <Link href="/onboarding" className="font-semibold text-[#D4AF37] underline">Edit Profile</Link> before using a target-based suggested rate. The minimum hourly rate below still uses monthly expenses and billable hours.</p>}
+        {!targetMissing && normalizedTarget < monthlyExpenses && <p className="mt-4 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-sm text-amber-200">Your target is below monthly expenses. The suggested rate uses expenses as the minimum monthly revenue floor.</p>}
 
         <section aria-live="polite" className="mt-6 grid gap-5 sm:grid-cols-2">
           <RateCard label="Minimum hourly rate" value={rates.minimum === null ? '—' : `${formatCurrency(rates.minimum, currency)} / hour`} description="Monthly expenses divided by monthly billable hours. This covers expenses before taxes and other business costs." />
           <RateCard label="Suggested hourly rate" value={rates.suggested === null ? '—' : `${formatCurrency(rates.suggested, currency)} / hour`} description="The higher of your monthly income target or expenses, divided by billable hours." highlighted />
         </section>
-        {rates.suggested === null && <p className="mt-4 text-sm text-gray-500">Enter a valid monthly target and 1–744 billable hours to see your rates.</p>}
+        {rates.suggested === null && !targetMissing && <p className="mt-4 text-sm text-gray-500">Enter a valid target and 1–744 billable hours to see the suggested rate.</p>}
 
         <section className="mt-6 rounded-2xl border border-[#2a2a2a] bg-[#0b0b0b] p-6">
           <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#D4AF37]">Your saved profile</p>
-          <div className="mt-5 grid gap-5 sm:grid-cols-3">
+          <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <ProfileMetric label="Monthly expenses" value={formatCurrency(monthlyExpenses, currency)} />
             <ProfileMetric label="Current savings" value={formatCurrency(monthlySavings, currency)} />
-            <ProfileMetric label="Average monthly income" value={formatCurrency(Number(profile.income) || 0, currency)} />
+            <ProfileMetric label="Current average monthly income" value={formatCurrency(Number(profile.income) || 0, currency)} />
+            <ProfileMetric label="Target monthly income" value={profile.target_monthly_income == null ? 'Not set' : formatCurrency(Number(profile.target_monthly_income), currency)} />
           </div>
           <p className="mt-5 text-xs leading-5 text-gray-500">Savings are shown as a financial buffer and are not added to the recurring monthly rate target.</p>
         </section>

@@ -30,6 +30,10 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     let active = true
     const loadIdentities = async () => {
+      const linkResult = new URLSearchParams(window.location.search).get('google_link')
+      if (linkResult === 'cancelled') setError('Google authorization was cancelled. Your existing RunRate account and data are unchanged.')
+      if (linkResult === 'failed') setError('Google authorization did not complete. Your existing RunRate account and data are unchanged; review the Supabase auth logs and try again.')
+      if (linkResult) window.history.replaceState({}, '', window.location.pathname)
       try {
         const supabase = createClient()
         const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -141,8 +145,8 @@ export default function AccountSettingsPage() {
 
         <div className="mt-8 grid gap-6">
           <section className="rounded-2xl border border-[#3b321c] bg-[#11100b] p-5 sm:p-7">
-            <h2 className="text-xl font-semibold">Verify before changing sign-in methods</h2>
-            <p className="mt-2 text-sm leading-6 text-gray-400">The eight-digit Supabase reauthentication code is submitted as the password-update nonce together with your new password in one operation. Google linking is available independently and does not require changing your password.</p>
+            <h2 className="text-xl font-semibold">Password security</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-400">Password verification is only used when setting or updating your email password. Google account linking uses its own OAuth authorization flow and never requires this code or a password change.</p>
             <div className="mt-5 grid gap-3 sm:max-w-md">
               <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#D4AF37] px-4 py-3 text-sm font-semibold text-[#D4AF37] disabled:cursor-not-allowed disabled:opacity-50">
                 {identitiesLoading ? 'Checking account…' : busy ? 'Please wait…' : reauthPending ? 'Send a new verification code' : 'Send verification code'}
