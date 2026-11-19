@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatCurrency, monthlyBurn, runwayMonths } from '@/lib/finance'
 import { useUserProfile } from '@/lib/supabase/use-profile'
+import { runrateImages } from '@/lib/images'
 
 export default function RunwayPage() {
   const router = useRouter()
@@ -43,8 +44,15 @@ export default function RunwayPage() {
           <p className="mt-3 max-w-2xl text-base leading-7 text-gray-400">Runway uses actual current income—not your desired target—to calculate monthly surplus, shortfall, and savings drawdown.</p>
         </header>
 
-        <div className="mt-7 overflow-hidden rounded-2xl">
-          <Image src="/runrate-planning.png" alt="A freelancer reviewing a financial plan at a bright desk" width={1200} height={675} sizes="(min-width: 1024px) 960px, 100vw" className="h-44 w-full object-cover sm:h-56" />
+        <div className="mt-7 grid overflow-hidden rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] md:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative aspect-[4/3] md:min-h-[320px]">
+            <Image src={runrateImages.journaling} alt="Black African woman thoughtfully writing in her journal at a library table" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[center_38%]" />
+          </div>
+          <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6842A6]">Reflect, then plan</p>
+            <p className="mt-3 text-2xl leading-tight sm:text-3xl">A thoughtful view of your financial runway.</p>
+            <p className="mt-3 text-sm leading-6 text-[#625b6b]">Use your current income, expenses, and savings to understand the pace you&apos;re working at today.</p>
+          </div>
         </div>
         <section aria-label="Financial profile" className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <Metric label="Current savings" value={formatCurrency(savings, currency)} highlighted />

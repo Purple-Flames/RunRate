@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { runrateImages } from "@/lib/images";
 
 function RunwayGraph() {
   return (
@@ -52,101 +53,7 @@ function RunwayGraph() {
   );
 }
 
-function LaptopPreview() {
-  return (
-    <div className="relative w-full max-w-[620px] mx-auto">
-      <div className="relative rounded-[18px] border border-white/15 bg-[#F8F6FA] p-3 shadow-2xl">
-        <div className="rounded-[12px] border border-[#E8E3ED] bg-[#FFFFFF] overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#E8E3ED]">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#6842A6]" />
-                <span className="w-2 h-2 rounded-full bg-[#6842A6]" />
-                <span className="w-2 h-2 rounded-full bg-[#6842A6]" />
-              </div>
-              <span className="text-xs font-semibold text-[#241d2e]">RunRate</span>
-            </div>
-            <span className="text-[9px] text-neutral-500">Dashboard</span>
-          </div>
 
-          <div className="p-4">
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                ["Current Runway", "4.8 months"],
-                ["Monthly Expenses", "₦650,000"],
-                ["Monthly Savings", "₦1,150,000"],
-                ["Suggested Rate", "₦185,000"],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-md border border-[#E8E3ED] bg-[#F7F5FA] p-2">
-                  <p className="text-[8px] text-neutral-500">{label}</p>
-                  <p className="mt-1 text-[10px] font-semibold text-[#6842A6]">{value}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-[1.7fr_1fr] gap-2 mt-3">
-              <div className="rounded-lg border border-[#E8E3ED] bg-[#FFFFFF] p-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] font-semibold text-[#241d2e]">Runway Projection</span>
-                  <span className="text-[8px] text-[#6842A6]">6M</span>
-                </div>
-
-                <div className="relative h-[120px]">
-                  <div className="absolute inset-x-0 top-4 border-t border-white/5" />
-                  <div className="absolute inset-x-0 top-1/2 border-t border-white/5" />
-                  <div className="absolute inset-x-0 bottom-4 border-t border-white/5" />
-
-                  <div className="absolute left-[5%] right-[5%] top-[30%] h-[2px] bg-[#6842A6] rotate-[5deg]" />
-                  <div className="absolute left-[5%] right-[5%] top-[52%] h-[2px] bg-[#6842A6] rotate-[-3deg] opacity-80" />
-
-                  <div className="absolute left-[5%] top-[27%] w-2 h-2 rounded-full bg-[#6842A6]" />
-                  <div className="absolute left-[28%] top-[36%] w-2 h-2 rounded-full bg-[#6842A6]" />
-                  <div className="absolute left-[52%] top-[49%] w-2 h-2 rounded-full bg-[#6842A6]" />
-                  <div className="absolute left-[76%] top-[42%] w-2 h-2 rounded-full bg-[#6842A6]" />
-                  <div className="absolute right-[5%] top-[32%] w-2 h-2 rounded-full bg-[#6842A6]" />
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-[#E8E3ED] bg-[#FFFFFF] p-3">
-                <p className="text-[9px] font-semibold text-[#241d2e] mb-2">
-                  Runway at Different Rates
-                </p>
-
-                <div className="space-y-2">
-                  {[
-                    ["₦120,000", "5.1 months"],
-                    ["₦150,000", "5.3 months"],
-                    ["₦185,000", "5.4 months"],
-                    ["₦220,000", "5.6 months"],
-                    ["₦250,000", "5.8 months"],
-                  ].map(([rate, runway], index) => (
-                    <div
-                      key={rate}
-                      className="flex justify-between border-b border-white/5 pb-1 text-[8px]"
-                    >
-                      <span className={index === 2 ? "text-[#6842A6]" : "text-neutral-500"}>
-                        {rate}
-                      </span>
-                      <span className={index === 2 ? "text-[#6842A6]" : "text-neutral-500"}>
-                        {runway}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="relative mx-auto mt-1 w-[94%] h-4 rounded-b-[50%] border-x border-b border-[#E8E3ED] bg-[#E8E3ED] shadow-2xl">
-        <div className="absolute left-[40%] top-0 h-2 w-[20%] rounded-b-full bg-[#101010]" />
-      </div>
-
-      <div className="mx-auto mt-1 h-2 w-[72%] rounded-full bg-black/80 blur-md" />
-    </div>
-  );
-}
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -288,15 +195,15 @@ export default function Home() {
                   className="inline-flex items-center justify-center rounded-md border border-[#6842A6]/60 px-7 py-4 font-semibold text-[#241d2e] hover:bg-[#6842A6]/10"
                 >
                   See How It Works
-                  <span className="ml-3">▷</span>
+                  <span className="ml-3" aria-hidden="true">→</span>
                 </a>
               </div>
 
               <div className="mt-10 grid grid-cols-3 gap-5 max-w-lg">
                 {[
-                  ["♢", "100% Private", "Your data is yours."],
-                  ["ϟ", "Instant Insights", "See results in real-time."],
-                  ["⌁", "Smarter Decisions", "Price with confidence."],
+                  ["01", "100% Private", "Your data is yours."],
+                  ["02", "Instant Insights", "See results in real-time."],
+                  ["03", "Smarter Decisions", "Price with confidence."],
                 ].map(([icon, title, text]) => (
                   <div key={title}>
                     <div className="text-[#6842A6] text-xl">{icon}</div>
@@ -313,8 +220,8 @@ export default function Home() {
 
             <div className="relative min-h-[420px] overflow-hidden rounded-[2rem] bg-[#F2EDF8] sm:min-h-[520px]">
               <Image
-                src="/runrate-hero.png"
-                alt="Independent creative planning their work at a sunlit home studio desk"
+                src={runrateImages.collaboration}
+                alt="Two Black African freelancers collaborating over notes at a warmly lit library table"
                 fill
                 priority
                 sizes="(min-width: 1024px) 50vw, 100vw"
@@ -324,7 +231,7 @@ export default function Home() {
               <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/70 bg-white/95 p-4 shadow-xl sm:bottom-7 sm:left-7 sm:right-7 sm:p-5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6842A6]">Your financial workspace</p>
                 <p className="mt-1 text-lg font-semibold text-[#241d2e] sm:text-xl">A clearer view of what your work makes possible.</p>
-                <div className="mt-4 hidden sm:block"><LaptopPreview /></div>
+                <p className="mt-3 text-sm leading-6 text-[#625b6b]">Thoughtful tools for the work and life you&apos;re building.</p>
               </div>
             </div>
           </div>
@@ -347,22 +254,22 @@ export default function Home() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
             {[
               [
-                "▣",
+                "01",
                 "Price with Confidence",
                 "Find the right rate for your skills, market and goals.",
               ],
               [
-                "◎",
+                "02",
                 "See Your Runway",
                 "Understand how every rate impacts your financial runway.",
               ],
               [
-                "◴",
+                "03",
                 "Plan Your Future",
                 "Set savings goals and plan for your financial future.",
               ],
               [
-                "▥",
+                "04",
                 "Make Smarter Decisions",
                 "Use clear financial insights to make better choices.",
               ],
@@ -484,10 +391,41 @@ export default function Home() {
         </div>
       </section>
 
+      <section aria-labelledby="resources-heading" className="border-b border-[#E8E3ED] bg-[#FAF9FC]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-center lg:py-20">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.2em] text-[#6842A6]">A MORE HUMAN WAY TO PLAN</p>
+            <h2 id="resources-heading" className="mt-4 text-3xl sm:text-4xl">Make room for the life around the work.</h2>
+            <p className="mt-4 max-w-lg text-sm leading-7 text-[#625b6b]">Build financial habits that support your ambition without losing sight of rest, perspective, and the people beside you.</p>
+            <Link href="/signup" className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-[#6842A6] px-5 py-3 text-sm font-semibold text-white hover:bg-[#57348F]">Start planning <span className="ml-2" aria-hidden="true">→</span></Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <article className="overflow-hidden rounded-2xl border border-[#E8E3ED] bg-white shadow-sm">
+              <div className="relative aspect-[4/3]">
+                <Image src={runrateImages.journaling} alt="Black African woman writing in her journal at a library table" fill sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw" className="object-cover object-[center_38%]" />
+              </div>
+              <div className="p-4"><h3 className="text-xl">Learn at your own pace</h3><p className="mt-1 text-sm leading-6 text-[#625b6b]">Make time to reflect, learn, and plan your next step.</p></div>
+            </article>
+            <article className="overflow-hidden rounded-2xl border border-[#E8E3ED] bg-white shadow-sm">
+              <div className="relative aspect-[4/3]">
+                <Image src={runrateImages.balance} alt="Black African woman relaxing with headphones and a warm drink in a softly lit library" fill sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw" className="object-cover object-[center_34%]" />
+              </div>
+              <div className="p-4"><h3 className="text-xl">A steadier kind of growth</h3><p className="mt-1 text-sm leading-6 text-[#625b6b]">Financial clarity should make space for rest, too.</p></div>
+            </article>
+            <article className="overflow-hidden rounded-2xl border border-[#E8E3ED] bg-white shadow-sm">
+              <div className="relative aspect-[4/3]">
+                <Image src={runrateImages.maleReading} alt="Black African man relaxing with a book in a warm, quiet library" fill sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw" className="object-cover object-[center_38%]" />
+              </div>
+              <div className="p-4"><h3 className="text-xl">Space to think</h3><p className="mt-1 text-sm leading-6 text-[#625b6b]">Step back, take in a new perspective, and plan with care.</p></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section id="pricing" className="border-b border-[#E8E3ED]">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 py-16">
-          <div className="rounded-2xl border border-[#6842A6]/20 bg-gradient-to-r from-[#F7F5FA] via-[#11100B] to-[#F7F5FA] p-8 sm:p-12">
+          <div className="rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] p-8 sm:p-12">
             <div className="flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
                 <h2 className="text-3xl sm:text-4xl font-semibold">

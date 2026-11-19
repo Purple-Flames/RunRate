@@ -1,16 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 
-const bodyFont = DM_Sans({
+const bodyFont = Manrope({
   variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const displayFont = DM_Serif_Display({
+const displayFont = Cormorant_Garamond({
   variable: "--font-display",
-  weight: "400",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

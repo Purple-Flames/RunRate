@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatCurrency, hourlyRates } from '@/lib/finance'
 import { useUserProfile } from '@/lib/supabase/use-profile'
+import { runrateImages } from '@/lib/images'
 
 export default function RateCalculatorPage() {
   const router = useRouter()
@@ -53,8 +54,15 @@ export default function RateCalculatorPage() {
           <p className="mt-3 max-w-2xl text-base leading-7 text-gray-400">Estimate an hourly rate from your monthly expenses, income target, and realistic billable hours.</p>
         </header>
 
-        <div className="mt-7 overflow-hidden rounded-2xl">
-          <Image src="/runrate-creative.png" alt="A creative freelancer working on a client project in a bright studio" width={1200} height={675} sizes="(min-width: 1024px) 960px, 100vw" className="h-40 w-full object-cover sm:h-52" />
+        <div className="mt-7 grid overflow-hidden rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] md:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative aspect-[4/3] md:min-h-[320px]">
+            <Image src={runrateImages.phoneDecision} alt="Black African man thoughtfully reviewing his phone in a warmly lit library" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[center_38%]" />
+          </div>
+          <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6842A6]">Price with intention</p>
+            <p className="mt-3 text-2xl leading-tight sm:text-3xl">Set a rate that supports your goals.</p>
+            <p className="mt-3 text-sm leading-6 text-[#625b6b]">Compare a realistic billable schedule with your monthly expenses and separate income target.</p>
+          </div>
         </div>
         <section className="mt-8 grid gap-5 md:grid-cols-2">
           <div className="rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6">

@@ -7,10 +7,11 @@
   --surface: #ffffff;
   --surface-muted: #f7f5fa;
   --border: #e8e3ed;
-  --muted: #6f6878;
+  --muted: #625b6b;
   --primary: #6842a6;
   --primary-hover: #57348f;
   --lavender: #f2edf8;
+  --plum: #34213f;
 }
 
 @theme inline {
@@ -67,7 +68,17 @@ main .text-gray-400 {
 
 main .text-neutral-500,
 main .text-gray-500 {
-  color: #797181;
+  color: #625b6b;
+}
+
+main [class*="border-[#222]"],
+main [class*="border-[#333]"],
+main [class*="border-[#444]"] {
+  border-color: var(--border);
+}
+
+main [class*="bg-white/5"] {
+  background-color: var(--surface-muted);
 }
 
 main [class*="border-white/10"] {
