@@ -42,10 +42,10 @@ export default function OfferAnalysisPage() {
 
 
   if (isLoading || (!profileError && (!account || !account.profile))) {
-    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] text-[#241d2e]"><p role="status" className="text-gray-400">Loading your profile…</p></main>
+    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] text-[#29252A]"><p role="status" className="text-gray-400">Loading your profile…</p></main>
   }
   if (profileError || !account?.profile) {
-    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] px-6 text-center text-[#241d2e]"><div><h1 className="text-2xl font-bold">Profile unavailable</h1><p className="mt-3 text-sm text-gray-400">We could not load your saved profile. Return to the dashboard and try again.</p><Link href="/dashboard" className="mt-5 inline-block text-[#6842A6] hover:underline">Back to dashboard</Link></div></main>
+    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] px-6 text-center text-[#29252A]"><div><h1 className="text-2xl font-bold">Profile unavailable</h1><p className="mt-3 text-sm text-gray-400">We could not load your saved profile. Return to the dashboard and try again.</p><Link href="/dashboard" className="mt-5 inline-block text-[#54264F] hover:underline">Back to dashboard</Link></div></main>
   }
 
   const profile = account.profile
@@ -88,7 +88,7 @@ export default function OfferAnalysisPage() {
         : analysis.status === 'exceeds-target'
           ? 'This offer exceeds your saved monthly income target.'
           : 'Complete the workload and duration fields to assess this offer.'
-  const statusTone = analysis.status === 'below-expenses' ? 'text-red-300' : analysis.status === 'incomplete' ? 'text-gray-400' : 'text-[#6842A6]'
+  const statusTone = analysis.status === 'below-expenses' ? 'text-red-300' : analysis.status === 'incomplete' ? 'text-gray-400' : 'text-[#54264F]'
   const recommendation = targetMissing
     ? 'Add your Target Monthly Income in Edit Profile before using target-based offer comparisons. Your current income and runway remain separate.'
     : !analysis.complete
@@ -102,51 +102,51 @@ export default function OfferAnalysisPage() {
           : 'This offer exceeds your benchmark. Confirm that the scope, payment schedule, and workload are realistic.'
 
   return (
-    <main className="min-h-screen w-full bg-[#FFFFFF] px-5 py-8 text-[#241d2e] sm:px-8 lg:px-12">
+    <main className="min-h-screen w-full bg-[#FFFFFF] px-5 py-8 text-[#29252A] sm:px-8 lg:px-12">
       <div className="mx-auto w-full max-w-6xl">
-        <Link href="/dashboard" className="text-sm text-gray-400 hover:text-[#6842A6]">← Back to dashboard</Link>
+        <Link href="/dashboard" className="text-sm text-gray-400 hover:text-[#54264F]">← Back to dashboard</Link>
         <header className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#6842A6]">Offer Analysis</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#54264F]">Offer Analysis</p>
           <h1 className="mt-3 text-3xl font-bold sm:text-4xl">Should you take this offer?</h1>
           <p className="mt-3 max-w-3xl text-base leading-7 text-gray-400">Compare a client offer with your monthly financial baseline and the hours required to deliver the project.</p>
         </header>
 
-        <div className="mt-7 grid overflow-hidden rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] md:grid-cols-[1.05fr_0.95fr]">
+        <div className="mt-7 grid overflow-hidden rounded-2xl border border-[#E8E3ED] bg-[#F4F0F6] md:grid-cols-[1.05fr_0.95fr]">
           <div className="relative aspect-[4/3] md:min-h-[320px]">
             <Image src={runrateImages.offerReview} alt="Black African man and woman collaborating over notes in a warmly lit library" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[center_38%]" />
           </div>
           <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6842A6]">Consider the whole picture</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#54264F]">Consider the whole picture</p>
             <p className="mt-3 text-2xl leading-tight sm:text-3xl">Evaluate the offer, not just the number.</p>
             <p className="mt-3 text-sm leading-6 text-[#625b6b]">Compare the workload and project period with your expenses and target before deciding.</p>
           </div>
         </div>
         <section aria-label="Saved income profile" className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-[#E8E3ED] bg-[#FFFFFF] p-5"><p className="text-sm text-gray-400">Current Average Monthly Income</p><p className="mt-2 text-xl font-semibold">{money(monthlyIncomeCurrent)}</p><p className="mt-1 text-xs text-gray-500">Used for current financial runway, not treated as guaranteed project income.</p></div>
-          <div className="rounded-xl border border-[#E8E3ED] bg-[#FFFFFF] p-5"><p className="text-sm text-gray-400">Target Monthly Income</p><p className="mt-2 text-xl font-semibold text-[#6842A6]">{monthlyIncomeTarget === null ? 'Not set' : money(monthlyIncomeTarget)}</p><p className="mt-1 text-xs text-gray-500">Used to calculate your target offer and target hourly rate.</p></div>
+          <div className="rounded-xl border border-[#E8E3ED] bg-[#FFFFFF] p-5"><p className="text-sm text-gray-400">Target Monthly Income</p><p className="mt-2 text-xl font-semibold text-[#54264F]">{monthlyIncomeTarget === null ? 'Not set' : money(monthlyIncomeTarget)}</p><p className="mt-1 text-xs text-gray-500">Used to calculate your target offer and target hourly rate.</p></div>
         </section>
-        {targetMissing && <p role="status" className="mt-4 rounded-xl border border-[#6842A6]/50 bg-[#F7F5FA] p-4 text-sm leading-6 text-gray-200">Add a Target Monthly Income in <Link href="/onboarding" className="font-semibold text-[#6842A6] underline">Edit Profile</Link> before target-based calculations can be used.</p>}
+        {targetMissing && <p role="status" className="mt-4 rounded-xl border border-[#54264F]/50 bg-[#F4F0F6] p-4 text-sm leading-6 text-gray-200">Add a Target Monthly Income in <Link href="/onboarding" className="font-semibold text-[#54264F] underline">Edit Profile</Link> before target-based calculations can be used.</p>}
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6 sm:p-8">
             <h2 className="text-lg font-semibold">Offer details</h2>
             <p className="mt-1 text-sm text-gray-500">Your saved currency and profile figures are used automatically.</p>
             <div className="mt-6 grid gap-5">
-              <label htmlFor="offer-category" className="text-sm font-semibold text-gray-300">Freelancer category<select id="offer-category" value={categories.includes(selectedCategory) ? selectedCategory : categories[0] ?? ''} onChange={(event) => setCategory(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]">{categories.map((item) => <option key={item} value={item}>{categoryLabel(item)}</option>)}</select></label>
-              <label htmlFor="offer-amount" className="text-sm font-semibold text-gray-300">Total client offer amount<input id="offer-amount" type="number" min="0" step="0.01" inputMode="decimal" value={offer} onChange={(event) => setOffer(event.target.value)} placeholder="Example: 2500" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
+              <label htmlFor="offer-category" className="text-sm font-semibold text-gray-300">Freelancer category<select id="offer-category" value={categories.includes(selectedCategory) ? selectedCategory : categories[0] ?? ''} onChange={(event) => setCategory(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]">{categories.map((item) => <option key={item} value={item}>{categoryLabel(item)}</option>)}</select></label>
+              <label htmlFor="offer-amount" className="text-sm font-semibold text-gray-300">Total client offer amount<input id="offer-amount" type="number" min="0" step="0.01" inputMode="decimal" value={offer} onChange={(event) => setOffer(event.target.value)} placeholder="Example: 2500" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]" /></label>
               <div className="grid gap-5 sm:grid-cols-2">
-                <label htmlFor="hours-per-day" className="text-sm font-semibold text-gray-300">Working hours per day<input id="hours-per-day" type="number" min="0.1" max="24" step="0.5" inputMode="decimal" value={hoursPerDay} onChange={(event) => setHoursPerDay(event.target.value)} placeholder="Example: 6" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
-                <label htmlFor="days-per-week" className="text-sm font-semibold text-gray-300">Working days per week<input id="days-per-week" type="number" min="0.1" max="7" step="1" inputMode="numeric" value={daysPerWeek} onChange={(event) => setDaysPerWeek(event.target.value)} placeholder="Example: 5" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
+                <label htmlFor="hours-per-day" className="text-sm font-semibold text-gray-300">Working hours per day<input id="hours-per-day" type="number" min="0.1" max="24" step="0.5" inputMode="decimal" value={hoursPerDay} onChange={(event) => setHoursPerDay(event.target.value)} placeholder="Example: 6" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]" /></label>
+                <label htmlFor="days-per-week" className="text-sm font-semibold text-gray-300">Working days per week<input id="days-per-week" type="number" min="0.1" max="7" step="1" inputMode="numeric" value={daysPerWeek} onChange={(event) => setDaysPerWeek(event.target.value)} placeholder="Example: 5" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]" /></label>
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
-                <label htmlFor="project-duration" className="text-sm font-semibold text-gray-300">Project duration<input id="project-duration" type="number" min="0.1" max="120" step="0.1" inputMode="decimal" value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="Example: 2" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
-                <label htmlFor="duration-unit" className="text-sm font-semibold text-gray-300">Duration unit<select id="duration-unit" value={durationUnit} onChange={(event) => setDurationUnit(event.target.value as DurationUnit)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 font-normal text-[#241d2e] outline-none focus:border-[#6842A6]"><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option></select></label>
+                <label htmlFor="project-duration" className="text-sm font-semibold text-gray-300">Project duration<input id="project-duration" type="number" min="0.1" max="120" step="0.1" inputMode="decimal" value={duration} onChange={(event) => setDuration(event.target.value)} placeholder="Example: 2" className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]" /></label>
+                <label htmlFor="duration-unit" className="text-sm font-semibold text-gray-300">Duration unit<select id="duration-unit" value={durationUnit} onChange={(event) => setDurationUnit(event.target.value as DurationUnit)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 font-normal text-[#29252A] outline-none focus:border-[#54264F]"><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option></select></label>
               </div>
             </div>
           </div>
 
-          <div aria-live="polite" className="rounded-2xl border border-[#6842A6]/50 bg-[#FFFFFF] p-6 sm:p-8">
-            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#6842A6]">Financial assessment · {categoryLabel(selectedCategory)}</p>
+          <div aria-live="polite" className="rounded-2xl border border-[#54264F]/50 bg-[#FFFFFF] p-6 sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.15em] text-[#54264F]">Financial assessment · {categoryLabel(selectedCategory)}</p>
             <p className={`mt-4 text-xl font-semibold leading-8 ${statusTone}`}>{statusText}</p>
             <p className="mt-5 text-sm leading-6 text-gray-400">{analysis.complete ? `For your ${categoryLabel(selectedCategory)} work, at ${Number(hoursPerDay)} hours per day and ${Number(daysPerWeek)} days per week, this project is estimated at ${analysis.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours. The offer works out to ${money(analysis.hourlyRate)} per hour.` : 'Enter a non-negative offer, duration, and valid workload to calculate an assessment.'}</p>
           </div>
@@ -164,8 +164,8 @@ export default function OfferAnalysisPage() {
           <ResultCard label="Monthly equivalent" value={analysis.complete ? money(analysis.monthlyEquivalent) : '—'} />
         </section>
 
-        <section className="mt-6 rounded-2xl border border-[#6842A6]/60 bg-[#FFFFFF] p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-[#6842A6]">What would make this offer worthwhile?</h2>
+        <section className="mt-6 rounded-2xl border border-[#54264F]/60 bg-[#FFFFFF] p-6 sm:p-8">
+          <h2 className="text-2xl font-bold text-[#54264F]">What would make this offer worthwhile?</h2>
           <p className="mt-3 text-sm leading-6 text-gray-400">The minimum covers monthly expenses prorated to the project duration. The target uses your saved Target Monthly Income, prorated to the same period; it is a goal, not guaranteed income, and remains separate from current income and the expense minimum.</p>
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <ComparisonCard label="Client offer" amount={analysis.offer} difference={null} complete={analysis.complete} money={money} />
@@ -177,7 +177,7 @@ export default function OfferAnalysisPage() {
 
         <section className="mt-6 rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6 sm:p-8">
           <h2 className="text-xl font-bold">Runway effect, separate from profitability</h2>
-          <p className="mt-3 text-sm leading-7 text-gray-400">Your current runway is <strong className="text-[#241d2e]">{runwayLabel(analysis.currentRunway)}</strong>. If the full offer is paid and its estimated project expenses are subtracted before the remaining amount is added to savings, runway becomes <strong className="text-[#241d2e]">{analysis.complete ? runwayLabel(analysis.runwayAfterOffer) : '—'}</strong>.</p>
+          <p className="mt-3 text-sm leading-7 text-gray-400">Your current runway is <strong className="text-[#29252A]">{runwayLabel(analysis.currentRunway)}</strong>. If the full offer is paid and its estimated project expenses are subtracted before the remaining amount is added to savings, runway becomes <strong className="text-[#29252A]">{analysis.complete ? runwayLabel(analysis.runwayAfterOffer) : '—'}</strong>.</p>
           <p className="mt-4 text-sm leading-7 text-gray-300">{monthlyPositionText}</p>
           <p className="mt-4 text-sm leading-7 text-gray-500">Assumptions: a month is 4.345 weeks or 30.4375 days; project expenses scale with duration. This is an end-of-project estimate, not a payment-timing forecast, and excludes taxes, unpaid work, and other costs.</p>
         </section>
@@ -187,7 +187,7 @@ export default function OfferAnalysisPage() {
 }
 
 function ResultCard({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0 rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6"><p className="text-sm text-gray-400">{label}</p><p className="mt-3 break-words text-2xl font-bold text-[#6842A6]">{value}</p></div>
+  return <div className="min-w-0 rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6"><p className="text-sm text-gray-400">{label}</p><p className="mt-3 break-words text-2xl font-bold text-[#54264F]">{value}</p></div>
 }
 
 function ComparisonCard({ label, amount, difference, complete, money }: { label: string; amount: number; difference: number | null; complete: boolean; money: (value: number) => string }) {

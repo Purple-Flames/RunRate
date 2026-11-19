@@ -2,16 +2,16 @@
 
 :root {
   color-scheme: light;
-  --background: #ffffff;
-  --foreground: #241d2e;
+  --background: #f8f6f3;
+  --foreground: #29252a;
   --surface: #ffffff;
-  --surface-muted: #f7f5fa;
-  --border: #e8e3ed;
-  --muted: #625b6b;
-  --primary: #6842a6;
-  --primary-hover: #57348f;
-  --lavender: #f2edf8;
-  --plum: #34213f;
+  --surface-muted: #f4f0f6;
+  --border: #e9e3e9;
+  --muted: #726b73;
+  --primary: #54264f;
+  --primary-hover: #421e3e;
+  --lavender: #e9dff0;
+  --plum: #54264f;
 }
 
 @theme inline {
@@ -38,49 +38,62 @@ body {
   font-family: var(--font-body), Arial, Helvetica, sans-serif;
 }
 
+main { animation: page-enter 460ms cubic-bezier(.2,.7,.2,1) both; }
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display), Georgia, serif;
   font-weight: 500;
   letter-spacing: -0.035em;
 }
 
-button,
-input,
-select,
-textarea {
-  font: inherit;
+button, input, select, textarea { font: inherit; }
+button:not(:disabled), a, input, select, textarea { transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, opacity 180ms ease; }
+button:not(:disabled):active { transform: scale(0.985); }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid color-mix(in srgb, var(--primary) 42%, transparent); outline-offset: 3px; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 12%, transparent); }
+::selection { color: #fff; background: var(--primary); }
+
+main[class*="bg-[#FFFFFF]"] { background-color: var(--background); }
+main .text-neutral-300, main .text-gray-300 { color: #574f60; }
+main .text-neutral-400, main .text-gray-400 { color: #6f6878; }
+main .text-neutral-500, main .text-gray-500 { color: #625b6b; }
+main [class*="border-[#222]"], main [class*="border-[#333]"], main [class*="border-[#444]"], main [class*="border-white/10"] { border-color: var(--border); }
+main [class*="bg-white/5"] { background-color: var(--surface-muted); }
+main [class*="rounded-2xl"][class*="border"] { transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease; }
+@media (hover: hover) and (pointer: fine) {
+  main [class*="rounded-2xl"][class*="border"]:hover { box-shadow: 0 12px 35px rgb(41 37 42 / 7%); }
 }
 
-::selection {
-  color: #fff;
-  background: #6842a6;
-}
+.dashboard-layout { min-height: 100dvh; }
+.dashboard-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; width: 252px; flex-direction: column; border-right: 1px solid var(--border); background: #fff; padding: 2rem 1.25rem 1.25rem; }
+.brand-mark { display: inline-flex; align-items: center; gap: .75rem; width: fit-content; color: var(--foreground); text-decoration: none; }
+.brand-bars { display: flex; height: 34px; align-items: end; gap: 3px; }
+.brand-bars i { display: block; width: 5px; border-radius: 3px; background: var(--primary); }
+.brand-bars i:nth-child(1) { height: 15px; }.brand-bars i:nth-child(2) { height: 24px; }.brand-bars i:nth-child(3) { height: 34px; }
+.brand-name { font-size: 1.2rem; font-weight: 700; letter-spacing: -.05em; }.brand-name span { color: var(--primary); }
+.nav-eyebrow { margin: 3rem 0 .75rem .75rem; color: #938b94; font: 700 .65rem var(--font-body); letter-spacing: .16em; }
+.nav-links, .sidebar-bottom { display: flex; flex-direction: column; gap: .35rem; }
+.nav-link { display: flex; min-height: 46px; align-items: center; gap: .75rem; border-radius: 12px; padding: .7rem .8rem; color: #6f6872; font-size: .87rem; text-decoration: none; }
+.nav-link:hover, .nav-link.is-active { background: var(--lavender); color: var(--primary); }
+.nav-link.is-active { font-weight: 700; }
+.nav-dot { width: 7px; height: 7px; flex: none; border: 1.5px solid currentColor; border-radius: 50%; }
+.nav-link.is-active .nav-dot { background: currentColor; }
+.sidebar-bottom { margin-top: auto; border-top: 1px solid var(--border); padding-top: 1rem; }
+.sidebar-bottom button { width: 100%; text-align: left; border-color: var(--border); }
+.dashboard-content { min-width: 0; margin-left: 252px; animation: page-enter 460ms cubic-bezier(.2,.7,.2,1) both; }
+.mobile-navigation { position: fixed; inset: auto 0 0; z-index: 40; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .2rem; border-top: 1px solid var(--border); background: rgb(255 255 255 / 96%); padding: .5rem .35rem calc(.5rem + env(safe-area-inset-bottom)); backdrop-filter: blur(16px); }
+.mobile-nav-link { display: flex; min-width: 0; min-height: 48px; flex-direction: column; align-items: center; justify-content: center; gap: .3rem; color: #756d77; font-size: .63rem; text-align: center; text-decoration: none; }
+.mobile-nav-link.is-active { color: var(--primary); font-weight: 700; }
+.mobile-nav-mark { width: 18px; height: 3px; border-radius: 9px; background: currentColor; opacity: .3; }
+.mobile-nav-link.is-active .mobile-nav-mark { opacity: 1; }
 
-main .text-neutral-300,
-main .text-gray-300 {
-  color: #574f60;
+@keyframes page-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes reveal-line { from { stroke-dashoffset: 900; } to { stroke-dashoffset: 0; } }
+.pulse-ring { stroke-dashoffset: 264; animation: pulse-reveal 900ms cubic-bezier(.2,.7,.2,1) 180ms both; }
+.projection-line { animation: reveal-line 1100ms cubic-bezier(.2,.7,.2,1) both; }
+@keyframes pulse-reveal { to { stroke-dashoffset: 0; } }
+@media (max-width: 1023px) {
+  .dashboard-content { margin-left: 0; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 }
-
-main .text-neutral-400,
-main .text-gray-400 {
-  color: #6f6878;
-}
-
-main .text-neutral-500,
-main .text-gray-500 {
-  color: #625b6b;
-}
-
-main [class*="border-[#222]"],
-main [class*="border-[#333]"],
-main [class*="border-[#444]"] {
-  border-color: var(--border);
-}
-
-main [class*="bg-white/5"] {
-  background-color: var(--surface-muted);
-}
-
-main [class*="border-white/10"] {
-  border-color: var(--border);
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

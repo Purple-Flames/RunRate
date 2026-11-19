@@ -134,21 +134,24 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FFFFFF] px-4 py-8 text-[#241d2e] sm:px-6 lg:px-10">
+    <main className="min-h-screen bg-[#FFFFFF] px-4 py-8 text-[#29252A] sm:px-6 lg:px-10">
       <div className="mx-auto w-full max-w-3xl">
-        <Link href="/dashboard" className="text-sm text-[#6842A6] hover:underline">← Back to dashboard</Link>
+        <Link href="/dashboard" className="text-sm text-[#54264F] hover:underline">← Back to dashboard</Link>
         <header className="mt-8 border-b border-[#E8E3ED] pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#6842A6]">RunRate</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#54264F]">RunRate</p>
           <h1 className="mt-2 text-3xl font-bold sm:text-4xl">Account Settings</h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-400">Securely manage the sign-in methods attached to this account. Your existing profile and financial data stay attached to the same user ID.</p>
         </header>
 
         <div className="mt-8 grid gap-6">
-          <section className="rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] p-5 sm:p-7">
+          <section className="rounded-2xl border border-[#E8E3ED] bg-white p-5 sm:p-7">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h2 className="text-xl font-semibold">Financial profile</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Edit your freelancer category, currency, current average monthly income, separate target income, expenses, and savings.</p></div><Link href="/onboarding" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#54264F] px-5 text-sm font-semibold text-white hover:bg-[#421E3E]">Edit profile</Link></div>
+          </section>
+          <section className="rounded-2xl border border-[#E8E3E9] bg-[#F4F0F6] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Password security</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">Password verification is only used when setting or updating your email password. Google account linking uses its own OAuth authorization flow and never requires this code or a password change.</p>
             <div className="mt-5 grid gap-3 sm:max-w-md">
-              <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#6842A6] px-4 py-3 text-sm font-semibold text-[#6842A6] disabled:cursor-not-allowed disabled:opacity-50">
+              <button type="button" onClick={requestSecurityCode} disabled={busy || identitiesLoading || !accountAvailable} className="min-h-11 rounded-lg border border-[#54264F] px-4 py-3 text-sm font-semibold text-[#54264F] disabled:cursor-not-allowed disabled:opacity-50">
                 {identitiesLoading ? 'Checking account…' : busy ? 'Please wait…' : reauthPending ? 'Send a new verification code' : 'Send verification code'}
               </button>
               {reauthPending && <p className="text-sm text-gray-300">A code was requested for {reauthEmail}. Enter all 8 digits with your password below.</p>}
@@ -156,28 +159,28 @@ export default function AccountSettingsPage() {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] p-5 sm:p-7">
+          <section className="rounded-2xl border border-[#E8E3ED] bg-[#F4F0F6] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Google sign-in</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">Link Google directly to this signed-in account. No password change is needed. RunRate will not merge another account or profile based on an email address.</p>
             <p className="mt-3 text-sm text-gray-300">{identitiesLoading ? 'Checking linked accounts…' : hasGoogle ? 'Google is linked to this account.' : 'Google is not linked.'}</p>
-            <button type="button" onClick={handleLinkGoogle} disabled={busy || identitiesLoading || !accountAvailable || hasGoogle} className="mt-5 min-h-11 rounded-lg bg-[#6842A6] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" onClick={handleLinkGoogle} disabled={busy || identitiesLoading || !accountAvailable || hasGoogle} className="mt-5 min-h-11 rounded-lg bg-[#54264F] px-4 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
               {hasGoogle ? 'Google is linked' : busy ? 'Preparing secure link…' : 'Link Google account'}
             </button>
           </section>
 
-          <section className="rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] p-5 sm:p-7">
+          <section className="rounded-2xl border border-[#E8E3ED] bg-[#F4F0F6] p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Email and password</h2>
             <p className="mt-2 text-sm leading-6 text-gray-400">{hasPassword ? 'Update the password for this account.' : 'Set a password to enable email and password sign-in.'} Request a fresh code above, then submit it with your password so Supabase can validate the nonce in the password update.</p>
             <form onSubmit={handlePassword} className="mt-5 grid gap-4 sm:max-w-md">
-              {reauthPending && <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">Eight-digit verification code<input id="reauth-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={REAUTHENTICATION_CODE_LENGTH} pattern={`[0-9]{${REAUTHENTICATION_CODE_LENGTH}}`} required value={reauthToken} onChange={(event) => setReauthToken(event.target.value.replace(/\D/g, '').slice(0, REAUTHENTICATION_CODE_LENGTH))} aria-describedby="reauth-token-help" className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-3 py-3 text-[#241d2e] outline-none focus:border-[#6842A6]" /><span id="reauth-token-help" className="text-xs text-gray-400">Enter all 8 digits. Incorrect, expired, or reused codes must be rejected by Supabase.</span></label>}
-              <label className="grid gap-2 text-sm font-medium" htmlFor="new-password">New password<input id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-3 py-3 text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
-              <label className="grid gap-2 text-sm font-medium" htmlFor="confirm-password">Confirm password<input id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-3 py-3 text-[#241d2e] outline-none focus:border-[#6842A6]" /></label>
-              <button type="submit" disabled={busy || identitiesLoading || !accountAvailable || !reauthPending || !password || !confirmPassword} className="min-h-11 rounded-lg border border-[#6842A6] px-4 py-3 text-sm font-semibold text-[#6842A6] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Updating password…' : hasPassword ? 'Update password' : 'Set password'}</button>
+              {reauthPending && <label className="grid gap-2 text-sm font-medium" htmlFor="reauth-token">Eight-digit verification code<input id="reauth-token" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={REAUTHENTICATION_CODE_LENGTH} pattern={`[0-9]{${REAUTHENTICATION_CODE_LENGTH}}`} required value={reauthToken} onChange={(event) => setReauthToken(event.target.value.replace(/\D/g, '').slice(0, REAUTHENTICATION_CODE_LENGTH))} aria-describedby="reauth-token-help" className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6F3] px-3 py-3 text-[#29252A] outline-none focus:border-[#54264F]" /><span id="reauth-token-help" className="text-xs text-gray-400">Enter all 8 digits. Incorrect, expired, or reused codes must be rejected by Supabase.</span></label>}
+              <label className="grid gap-2 text-sm font-medium" htmlFor="new-password">New password<input id="new-password" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6F3] px-3 py-3 text-[#29252A] outline-none focus:border-[#54264F]" /></label>
+              <label className="grid gap-2 text-sm font-medium" htmlFor="confirm-password">Confirm password<input id="confirm-password" type="password" autoComplete="new-password" minLength={8} required value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="min-h-11 rounded-lg border border-[#E8E3ED] bg-[#F8F6F3] px-3 py-3 text-[#29252A] outline-none focus:border-[#54264F]" /></label>
+              <button type="submit" disabled={busy || identitiesLoading || !accountAvailable || !reauthPending || !password || !confirmPassword} className="min-h-11 rounded-lg border border-[#54264F] px-4 py-3 text-sm font-semibold text-[#54264F] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Updating password…' : hasPassword ? 'Update password' : 'Set password'}</button>
             </form>
           </section>
 
-          {message && <p role="status" aria-live="polite" className="rounded-lg border border-green-800 bg-green-950/40 p-4 text-sm text-green-200">{message}</p>}
-          {error && <p role="alert" className="rounded-lg border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{error}</p>}
+          {message && <p role="status" aria-live="polite" className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">{message}</p>}
+          {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{error}</p>}
         </div>
       </div>
     </main>

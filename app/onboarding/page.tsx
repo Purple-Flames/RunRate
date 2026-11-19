@@ -19,6 +19,7 @@ export default function OnboardingPage() {
   const [savings, setSavings] = useState('')
   const [income, setIncome] = useState('')
   const [targetIncome, setTargetIncome] = useState('')
+  const [step, setStep] = useState(1)
   const [busy, setBusy] = useState(false)
   const [formError, setFormError] = useState('')
 
@@ -58,6 +59,14 @@ export default function OnboardingPage() {
     setFormError('')
     if (!account) {
       setFormError('Your session has expired. Sign in again before saving.')
+      return
+    }
+    if (step === 1) {
+      if (categories.length === 0) {
+        setFormError('Choose at least one freelancer category before continuing.')
+        return
+      }
+      setStep(2)
       return
     }
     if (categories.length === 0) {
@@ -103,11 +112,11 @@ export default function OnboardingPage() {
   }
 
   if (isLoading || (!profileLoadError && !account)) {
-    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] text-[#241d2e]"><p role="status" className="text-sm text-gray-400">Loading your profile…</p></main>
+    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] text-[#29252A]"><p role="status" className="text-sm text-gray-400">Loading your profile…</p></main>
   }
 
   if (profileLoadError) {
-    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] px-6 text-center text-[#241d2e]"><div className="max-w-md"><h1 className="text-2xl font-bold">Profile unavailable</h1><p className="mt-3 text-sm text-gray-400">We could not load your saved profile. Try again or sign in again.</p><Link href="/login" className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-[#6842A6] px-4 text-sm text-[#6842A6]">Sign in</Link></div></main>
+    return <main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] px-6 text-center text-[#29252A]"><div className="max-w-md"><h1 className="text-2xl font-bold">Profile unavailable</h1><p className="mt-3 text-sm text-gray-400">We could not load your saved profile. Try again or sign in again.</p><Link href="/login" className="mt-5 inline-flex min-h-11 items-center rounded-lg border border-[#54264F] px-4 text-sm text-[#54264F]">Sign in</Link></div></main>
   }
 
   if (!account) return null
@@ -115,34 +124,35 @@ export default function OnboardingPage() {
   const editing = Boolean(account.profile)
 
   return (
-    <main className="min-h-screen w-full bg-[#FFFFFF] text-[#241d2e]">
-      <header className="w-full border-b border-[#222] px-6 py-5"><Link href="/" className="text-xl font-bold">Run<span className="text-[#6842A6]">Rate</span></Link></header>
+    <main className="min-h-screen w-full bg-[#FFFFFF] text-[#29252A]">
+      <header className="w-full border-b border-[#222] px-6 py-5"><Link href="/" className="text-xl font-bold">Run<span className="text-[#54264F]">Rate</span></Link></header>
       <form onSubmit={handleSave} className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8 lg:px-12">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#6842A6]">Profile Setup</p>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#54264F]">Profile Setup</p>
         <h1 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-5xl">Let&apos;s get your RunRate ready.</h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-400">Your saved categories and financial figures are prefilled when editing. Saving updates these profile fields without changing your sign-in method.</p>
+        <div className="mt-8 max-w-xl" aria-label={`Step ${step} of 2`}><div className="flex items-center gap-3"><span className={`grid size-8 place-items-center rounded-full text-sm font-bold ${step === 1 ? 'bg-[#54264F] text-white' : 'bg-[#E9DFF0] text-[#54264F]'}`}>1</span><span className="h-px flex-1 bg-[#E9E3E9]" /><span className={`grid size-8 place-items-center rounded-full text-sm font-bold ${step === 2 ? 'bg-[#54264F] text-white' : 'bg-[#E9DFF0] text-[#54264F]'}`}>2</span></div><div className="mt-2 flex justify-between text-xs text-gray-500"><span>Work profile</span><span>Financial baseline</span></div></div>
 
-        <div className="mt-10 grid w-full gap-8 lg:grid-cols-2">
+        {step === 1 && <div className="mt-10 grid w-full gap-8 lg:grid-cols-2">
           <fieldset className="min-w-0">
             <legend className="text-sm font-bold">Freelancer category</legend>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {presetCategories.map((item) => (
-                <label key={item} className="flex min-h-12 items-center gap-3 rounded-xl border border-[#E8E3ED] bg-[#F8F6FA] px-4 py-3 text-sm text-[#241d2e]">
-                  <input type="checkbox" checked={categories.includes(item)} onChange={(event) => toggleCategory(item, event.target.checked)} className="h-5 w-5 accent-[#6842A6]" />
+                <label key={item} className="flex min-h-12 items-center gap-3 rounded-xl border border-[#E8E3ED] bg-[#F8F6F3] px-4 py-3 text-sm text-[#29252A]">
+                  <input type="checkbox" checked={categories.includes(item)} onChange={(event) => toggleCategory(item, event.target.checked)} className="h-5 w-5 accent-[#54264F]" />
                   {item}
                 </label>
               ))}
             </div>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <label htmlFor="custom-category" className="sr-only">Add another category</label>
-              <input id="custom-category" value={customCategory} onChange={(event) => setCustomCategory(event.target.value)} placeholder="Add another category" className="min-h-12 min-w-0 flex-1 rounded-xl border border-[#444] bg-[#F8F6FA] px-4 text-sm text-[#241d2e]" />
-              <button type="button" onClick={addCustomCategory} className="min-h-12 rounded-xl border border-[#6842A6] px-5 text-sm font-semibold text-[#6842A6]">Add category</button>
+              <input id="custom-category" value={customCategory} onChange={(event) => setCustomCategory(event.target.value)} placeholder="Add another category" className="min-h-12 min-w-0 flex-1 rounded-xl border border-[#444] bg-[#F8F6F3] px-4 text-sm text-[#29252A]" />
+              <button type="button" onClick={addCustomCategory} className="min-h-12 rounded-xl border border-[#54264F] px-5 text-sm font-semibold text-[#54264F]">Add category</button>
             </div>
             {categories.filter((item) => !presetCategories.includes(item)).length > 0 && (
               <ul aria-label="Additional categories" className="mt-4 flex flex-wrap gap-2">
                 {categories.filter((item) => !presetCategories.includes(item)).map((item) => (
                   <li key={item} className="flex items-center gap-2 rounded-full border border-[#4b4024] px-3 py-1 text-sm text-gray-200">
-                    <span>{item}</span><button type="button" aria-label={`Remove ${item}`} onClick={() => setCategories((current) => current.filter((category) => category !== item))} className="text-[#6842A6]">Remove</button>
+                    <span>{item}</span><button type="button" aria-label={`Remove ${item}`} onClick={() => setCategories((current) => current.filter((category) => category !== item))} className="text-[#54264F]">Remove</button>
                   </li>
                 ))}
               </ul>
@@ -151,13 +161,14 @@ export default function OnboardingPage() {
 
           <div>
             <label htmlFor="currency" className="block text-sm font-bold">Currency</label>
-            <select id="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6FA] px-4 text-sm text-[#241d2e]">
+            <select id="currency" value={currency} onChange={(event) => setCurrency(event.target.value)} className="mt-3 min-h-12 w-full rounded-xl border border-[#444] bg-[#F8F6F3] px-4 text-sm text-[#29252A]">
               <option value="NGN">Nigerian Naira (₦)</option>
               <option value="USD">US Dollar ($)</option>
             </select>
           </div>
-        </div>
+        </div>}
 
+        {step === 2 && <>
         <div className="mt-8 grid w-full gap-6 sm:grid-cols-2">
           <FinancialInput id="expenses" label="Monthly expenses" value={expenses} onChange={setExpenses} currency={currency} />
           <FinancialInput id="savings" label="Current savings" value={savings} onChange={setSavings} currency={currency} />
@@ -166,10 +177,12 @@ export default function OnboardingPage() {
           <FinancialInput id="income" label="Current Average Monthly Income" help="How much do you currently earn on average each month?" value={income} onChange={setIncome} currency={currency} />
           <FinancialInput id="target-income" label="Target Monthly Income" help="How much would you like to earn each month?" value={targetIncome} onChange={setTargetIncome} currency={currency} />
         </div>
+        </>}
 
-        {formError && <p role="alert" className="mt-6 rounded-lg border border-red-900 bg-red-950/40 p-4 text-sm text-red-200">{formError}</p>}
-        <div className="mt-8 flex w-full justify-end">
-          <button type="submit" disabled={busy || isLoading} className="min-h-12 w-full rounded-xl bg-[#6842A6] px-8 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">{busy ? 'Saving profile…' : editing ? 'Save changes' : 'Save profile'}</button>
+        {formError && <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{formError}</p>}
+        <div className="mt-8 flex w-full flex-col-reverse justify-between gap-3 sm:flex-row">
+          {step === 2 ? <button type="button" onClick={() => { setFormError(''); setStep(1) }} className="min-h-12 rounded-xl border border-[#E9E3E9] px-8 text-sm font-semibold text-[#54264F]">Back</button> : <span aria-hidden="true" />}
+          <button type="submit" disabled={busy || isLoading} className="min-h-12 w-full rounded-xl bg-[#54264F] px-8 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto">{busy ? 'Saving profile…' : step === 1 ? 'Continue to finances' : editing ? 'Save changes' : 'Save profile'}</button>
         </div>
       </form>
     </main>
@@ -181,9 +194,9 @@ function FinancialInput({ id, label, help, value, onChange, currency }: { id: st
     <div>
       <label htmlFor={id} className="block text-sm font-bold">{label}</label>
       {help && <p id={`${id}-help`} className="mt-1 text-xs leading-5 text-gray-400">{help}</p>}
-      <div className="mt-3 flex min-h-12 items-center rounded-xl border border-[#444] bg-[#F8F6FA] focus-within:border-[#6842A6]">
+      <div className="mt-3 flex min-h-12 items-center rounded-xl border border-[#444] bg-[#F8F6F3] focus-within:border-[#54264F]">
         <span aria-hidden="true" className="px-4 text-sm text-gray-400">{currency === 'USD' ? '$' : '₦'}</span>
-        <input id={id} aria-describedby={help ? `${id}-help` : undefined} value={value} onChange={(event) => onChange(event.target.value)} type="number" min="0" step="0.01" required inputMode="decimal" placeholder="Enter an amount" className="min-h-12 min-w-0 flex-1 rounded-r-xl bg-transparent pr-4 text-sm text-[#241d2e] outline-none placeholder:text-[#777]" />
+        <input id={id} aria-describedby={help ? `${id}-help` : undefined} value={value} onChange={(event) => onChange(event.target.value)} type="number" min="0" step="0.01" required inputMode="decimal" placeholder="Enter an amount" className="min-h-12 min-w-0 flex-1 rounded-r-xl bg-transparent pr-4 text-sm text-[#29252A] outline-none placeholder:text-[#777]" />
       </div>
     </div>
   )
