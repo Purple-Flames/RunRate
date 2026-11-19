@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { analyzeOffer, formatCurrency, type DurationUnit } from '@/lib/finance'
 import { useUserProfile } from '@/lib/supabase/use-profile'
+import { runrateImages } from '@/lib/images'
 
 function numericInput(value: string) {
   return value.trim() === '' ? Number.NaN : Number(value)
@@ -110,8 +111,15 @@ export default function OfferAnalysisPage() {
           <p className="mt-3 max-w-3xl text-base leading-7 text-gray-400">Compare a client offer with your monthly financial baseline and the hours required to deliver the project.</p>
         </header>
 
-        <div className="mt-7 overflow-hidden rounded-2xl">
-          <Image src="/runrate-project.png" alt="A freelancer reviewing a client proposal and project notes" width={1200} height={675} sizes="(min-width: 1024px) 960px, 100vw" className="h-40 w-full object-cover sm:h-52" />
+        <div className="mt-7 grid overflow-hidden rounded-2xl border border-[#E8E3ED] bg-[#F7F5FA] md:grid-cols-[1.05fr_0.95fr]">
+          <div className="relative aspect-[4/3] md:min-h-[320px]">
+            <Image src={runrateImages.offerReview} alt="Black African man and woman collaborating over notes in a warmly lit library" fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover object-[center_38%]" />
+          </div>
+          <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6842A6]">Consider the whole picture</p>
+            <p className="mt-3 text-2xl leading-tight sm:text-3xl">Evaluate the offer, not just the number.</p>
+            <p className="mt-3 text-sm leading-6 text-[#625b6b]">Compare the workload and project period with your expenses and target before deciding.</p>
+          </div>
         </div>
         <section aria-label="Saved income profile" className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-[#E8E3ED] bg-[#FFFFFF] p-5"><p className="text-sm text-gray-400">Current Average Monthly Income</p><p className="mt-2 text-xl font-semibold">{money(monthlyIncomeCurrent)}</p><p className="mt-1 text-xs text-gray-500">Used for current financial runway, not treated as guaranteed project income.</p></div>
