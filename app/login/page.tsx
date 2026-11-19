@@ -124,14 +124,14 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#050505] px-4 py-8 text-white sm:px-8 lg:py-16">
+    <main className="flex min-h-screen min-h-[100dvh] w-full flex-1 items-center justify-center bg-[#FFFFFF] px-4 py-8 text-[#241d2e] sm:px-8 lg:py-16">
       <div className="grid w-full max-w-6xl items-center gap-10 lg:grid-cols-2 lg:gap-20">
         <section className="hidden max-w-xl lg:block" aria-labelledby="login-promo-title">
           <Link href="/" className="mb-12 inline-flex items-center gap-2">
-            <span className="flex items-end gap-1" aria-hidden="true"><span className="h-5 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-8 w-2 rounded-sm bg-[#D4AF37]" /><span className="h-11 w-2 rounded-sm bg-[#D4AF37]" /></span>
-            <span className="text-lg font-bold">Run<span className="text-[#D4AF37]">Rate</span></span>
+            <span className="flex items-end gap-1" aria-hidden="true"><span className="h-5 w-2 rounded-sm bg-[#6842A6]" /><span className="h-8 w-2 rounded-sm bg-[#6842A6]" /><span className="h-11 w-2 rounded-sm bg-[#6842A6]" /></span>
+            <span className="text-lg font-bold">Run<span className="text-[#6842A6]">Rate</span></span>
           </Link>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">Financial clarity for independent work</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-[#6842A6]">Financial clarity for independent work</p>
           <h2 id="login-promo-title" className="mt-5 text-5xl font-bold leading-tight">Make your next move with confidence.</h2>
           <p className="mt-6 max-w-lg text-lg leading-8 text-neutral-400">Understand your runway, price your work, and choose opportunities that support the life you&apos;re building.</p>
         </section>
@@ -139,30 +139,30 @@ function LoginForm() {
         <div className="mx-auto w-full max-w-md lg:mx-0 lg:max-w-xl">
         <Link href="/" className="mb-8 flex items-center justify-center gap-2 sm:justify-start lg:hidden">
           <div className="flex items-end gap-1" aria-hidden="true">
-            <span className="h-5 w-2 rounded-sm bg-[#D4AF37]" />
-            <span className="h-8 w-2 rounded-sm bg-[#D4AF37]" />
-            <span className="h-11 w-2 rounded-sm bg-[#D4AF37]" />
+            <span className="h-5 w-2 rounded-sm bg-[#6842A6]" />
+            <span className="h-8 w-2 rounded-sm bg-[#6842A6]" />
+            <span className="h-11 w-2 rounded-sm bg-[#6842A6]" />
           </div>
-          <span className="text-lg font-bold">Run<span className="text-[#D4AF37]">Rate</span></span>
+          <span className="text-lg font-bold">Run<span className="text-[#6842A6]">Rate</span></span>
         </Link>
 
-        <div className="rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 sm:p-8">
+        <div className="rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6 sm:p-8">
           <h1 className="text-3xl font-bold sm:text-4xl">Welcome back</h1>
           <p className="mt-2 text-base text-neutral-400">Log in to your account.</p>
 
           <form onSubmit={handleLogin} className="mt-8 space-y-5">
             <div>
               <label className="mb-2 block text-sm font-medium" htmlFor="email">Email address</label>
-              <input id="email" type="email" name="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" className="min-h-11 w-full rounded-lg border border-white/10 bg-[#111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]" />
+              <input id="email" type="email" name="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" className="min-h-11 w-full rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-4 py-3 text-base outline-none focus:border-[#6842A6]" />
             </div>
             <div>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <label className="text-sm font-medium" htmlFor="password">Password</label>
-                <button type="button" onClick={handlePasswordRecovery} disabled={recovering || busy} className="min-h-11 text-sm text-[#D4AF37] underline-offset-4 hover:underline disabled:opacity-50">{recovering ? 'Sending…' : 'Forgot password?'}</button>
+                <button type="button" onClick={handlePasswordRecovery} disabled={recovering || busy} className="min-h-11 text-sm text-[#6842A6] underline-offset-4 hover:underline disabled:opacity-50">{recovering ? 'Sending…' : 'Forgot password?'}</button>
               </div>
-              <input id="password" type="password" name="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-lg border border-white/10 bg-[#111] px-4 py-3 text-base outline-none focus:border-[#D4AF37]" />
+              <input id="password" type="password" name="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} className="min-h-11 w-full rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-4 py-3 text-base outline-none focus:border-[#6842A6]" />
             </div>
-            <button type="submit" disabled={busy || recovering} aria-busy={busy} className="min-h-11 w-full rounded-lg bg-[#D4AF37] px-4 py-3 font-semibold text-black hover:bg-[#e1bd43] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Signing in…' : 'Log in'}</button>
+            <button type="submit" disabled={busy || recovering} aria-busy={busy} className="min-h-11 w-full rounded-lg bg-[#6842A6] px-4 py-3 font-semibold text-white hover:bg-[#57348F] disabled:cursor-not-allowed disabled:opacity-50">{busy ? 'Signing in…' : 'Log in'}</button>
           </form>
 
           <div className="my-6 flex items-center gap-3">
@@ -171,10 +171,10 @@ function LoginForm() {
             <div className="h-px flex-1 bg-white/10" />
           </div>
 
-          <button type="button" onClick={handleGoogle} disabled={busy || recovering} className="min-h-11 w-full rounded-lg border border-white/10 bg-[#111] px-4 py-3 text-base font-medium hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50">Continue with Google</button>
+          <button type="button" onClick={handleGoogle} disabled={busy || recovering} className="min-h-11 w-full rounded-lg border border-[#E8E3ED] bg-[#F8F6FA] px-4 py-3 text-base font-medium hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50">Continue with Google</button>
           {message && <p role="status" aria-live="polite" className="mt-4 rounded-lg border border-green-900 bg-green-950/30 p-3 text-sm text-green-200">{message}</p>}
           {(errorMessage || callbackMessage) && <p role="alert" className="mt-4 rounded-lg border border-red-900 bg-red-950/30 p-3 text-sm text-red-200">{errorMessage || callbackMessage}</p>}
-          <p className="mt-6 text-center text-sm text-neutral-400">Don&apos;t have an account? <Link href="/signup" className="text-[#D4AF37] hover:underline">Sign up</Link></p>
+          <p className="mt-6 text-center text-sm text-neutral-400">Don&apos;t have an account? <Link href="/signup" className="text-[#6842A6] hover:underline">Sign up</Link></p>
         </div>
         </div>
       </div>
@@ -184,7 +184,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<main className="flex min-h-screen items-center justify-center bg-[#050505] text-white"><p role="status" className="text-sm text-gray-400">Loading sign in…</p></main>}>
+    <Suspense fallback={<main className="flex min-h-screen items-center justify-center bg-[#FFFFFF] text-[#241d2e]"><p role="status" className="text-sm text-gray-400">Loading sign in…</p></main>}>
       <LoginForm />
     </Suspense>
   )

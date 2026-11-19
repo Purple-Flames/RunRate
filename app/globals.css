@@ -1,16 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
-  --background: #050505;
-  --foreground: #f5f5f5;
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #241d2e;
+  --surface: #ffffff;
+  --surface-muted: #f7f5fa;
+  --border: #e8e3ed;
+  --muted: #6f6878;
+  --primary: #6842a6;
+  --primary-hover: #57348f;
+  --lavender: #f2edf8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary: var(--primary);
+  --color-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 html {
@@ -23,7 +34,13 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-body), Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
 }
 
 button,
@@ -31,4 +48,28 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+::selection {
+  color: #fff;
+  background: #6842a6;
+}
+
+main .text-neutral-300,
+main .text-gray-300 {
+  color: #574f60;
+}
+
+main .text-neutral-400,
+main .text-gray-400 {
+  color: #6f6878;
+}
+
+main .text-neutral-500,
+main .text-gray-500 {
+  color: #797181;
+}
+
+main [class*="border-white/10"] {
+  border-color: var(--border);
 }
