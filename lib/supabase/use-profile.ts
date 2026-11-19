@@ -9,6 +9,7 @@ export type UserProfile = {
   expenses: number | string
   savings: number | string
   income: number | string
+  target_monthly_income?: number | string | null
 }
 
 type AuthenticatedProfile = {
@@ -28,11 +29,21 @@ async function fetchAuthenticatedProfile(): Promise<AuthenticatedProfile | null>
 
   const { data: profile, error } = await supabase
     .from('profiles')
-    .select('category, currency, expenses, savings, income')
+    .select('category, currency, expenses, savings, income, target_monthly_income')
     .eq('id', user.id)
     .maybeSingle()
 
-  if (error) throw error
+  if (error && error.code !== '42703' && error.code !== 'PGRST204') throw error
+
+  if (error) {
+    const { data: legacyProfile, error: legacyError } = await supabase
+      .from('profiles')
+      .select('category, currency, expenses, savings, income')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (legacyError) throw legacyError
+    return { userId: user.id, profile: legacyProfile ? { ...legacyProfile, target_monthly_income: null } : null }
+  }
 
   return { userId: user.id, profile }
 }

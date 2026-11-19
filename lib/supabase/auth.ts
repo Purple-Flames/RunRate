@@ -100,7 +100,19 @@ export async function linkGoogleIdentity() {
   })
 
   if (error) {
-    throw toAccountSecurityError(error)
+    if (error.code === 'identity_already_exists' || error.code === 'identity_exists') {
+      throw new Error('This Google account is already linked to another RunRate account. Sign in to that account instead; no data was changed.')
+    }
+    if (error.code === 'identity_not_found') {
+      throw new Error('Google linking is not enabled for this Supabase project. No account or profile was changed.')
+    }
+    if (error.code === 'reauthentication_needed' || error.status === 401) {
+      throw new Error('Supabase requires a fresh sign-in before Google can be linked. Sign out and sign back in, then retry. The password-update verification code is not used for Google linking.')
+    }
+    if (error.status === 429) {
+      throw new Error('Too many account-linking attempts. Please wait before trying again.')
+    }
+    throw new Error(`Supabase could not start Google account linking${error.code ? ` (${error.code})` : ''}: ${error.message}`)
   }
 
   return data
