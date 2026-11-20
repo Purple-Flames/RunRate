@@ -28,6 +28,8 @@ export default function OfferAnalysisPage() {
   const [duration, setDuration] = useState('')
   const [durationUnit, setDurationUnit] = useState<DurationUnit>('weeks')
   const [showBreakdown, setShowBreakdown] = useState(false)
+  const [selectedDecision, setSelectedDecision] = useState<'accept' | 'negotiate' | 'decline'>('accept')
+  const [proposedFee, setProposedFee] = useState('')
 
   useEffect(() => {
     if (isLoading || profileError) return
@@ -90,6 +92,9 @@ export default function OfferAnalysisPage() {
           ? 'This offer exceeds your saved monthly income target.'
           : 'Complete the workload and duration fields to assess this offer.'
   const statusTone = analysis.status === 'below-expenses' ? 'text-red-300' : analysis.status === 'incomplete' ? 'text-gray-400' : 'text-[#54264F]'
+  const selectedScenarioAmount = selectedDecision === 'accept' ? analysis.offer : selectedDecision === 'negotiate' ? (Number(proposedFee) > 0 ? Number(proposedFee) : analysis.targetOffer) : 0
+  const selectedScenarioRate = analysis.complete ? selectedScenarioAmount / analysis.totalHours : null
+  const selectedScenarioDifference = selectedScenarioAmount - analysis.minimumOffer
   const recommendation = targetMissing
     ? 'Add your Target Monthly Income in Edit Profile before using target-based offer comparisons. Your current income and runway remain separate.'
     : !analysis.complete
@@ -151,6 +156,27 @@ export default function OfferAnalysisPage() {
             <p className={`mt-4 text-xl font-semibold leading-8 ${statusTone}`}>{statusText}</p>
             <p className="mt-5 text-sm leading-6 text-gray-400">{analysis.complete ? `For your ${categoryLabel(selectedCategory)} work, at ${Number(hoursPerDay)} hours per day and ${Number(daysPerWeek)} days per week, this project is estimated at ${analysis.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 })} hours. The offer works out to ${money(analysis.hourlyRate)} per hour.` : 'Enter a non-negative offer, duration, and valid workload to calculate an assessment.'}</p>
           </div>
+        </section>
+
+        <section aria-labelledby="decision-studio-title" className="mt-8 rounded-3xl bg-[#29252A] p-6 text-white sm:p-9">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#D9C6E3]">Client Offer Decision Studio</p><h2 id="decision-studio-title" className="mt-2 text-3xl sm:text-4xl">Choose a path to explore.</h2></div><p className="max-w-md text-sm leading-6 text-white/70">These are financial scenarios, not a recommendation. You decide what is right for the scope and relationship.</p></div>
+          <div className="mt-6 grid gap-3 md:grid-cols-3">
+            {(['accept', 'negotiate', 'decline'] as const).map((decision) => {
+              const isSelected = selectedDecision === decision
+              const amount = decision === 'accept' ? analysis.offer : decision === 'negotiate' ? (Number(proposedFee) > 0 ? Number(proposedFee) : analysis.targetOffer) : 0
+              const rate = analysis.complete ? amount / analysis.totalHours : null
+              const title = decision === 'accept' ? 'Accept' : decision === 'negotiate' ? 'Negotiate' : 'Decline'
+              const detail = decision === 'accept' ? 'Continue with the client offer as entered. Review the effective rate and project contribution before committing.' : decision === 'negotiate' ? 'Set a proposed fee and see how that changes the effective hourly rate against your saved benchmarks.' : 'No project fee or project hours are included in this scenario. Your existing income and runway assumptions remain unchanged.'
+              return <article key={decision} className={`rounded-2xl border p-5 transition-colors ${isSelected ? 'border-[#D9C6E3] bg-white/10' : 'border-white/20 bg-white/[0.03]'}`}>
+                <button type="button" onClick={() => setSelectedDecision(decision)} aria-pressed={isSelected} className="flex min-h-11 w-full items-center justify-between text-left"><span className="text-xl font-semibold">{title}</span><span className={`grid size-6 place-items-center rounded-full border text-xs ${isSelected ? 'border-[#D9C6E3] bg-[#D9C6E3] text-[#29252A]' : 'border-white/40'}`}>{isSelected ? '✓' : ''}</span></button>
+                {decision === 'negotiate' && <label className="mt-4 block text-xs text-white/70" htmlFor="proposed-fee">Proposed total fee ({currency})<input id="proposed-fee" type="number" min="0" step="0.01" inputMode="decimal" value={proposedFee} onChange={(event) => setProposedFee(event.target.value)} placeholder={analysis.complete ? String(analysis.targetOffer) : 'Enter a proposal'} className="mt-2 min-h-11 w-full rounded-lg border border-white/20 bg-white/10 px-3 text-sm text-white placeholder:text-white/40" /></label>}
+                <p className="mt-4 text-sm leading-6 text-white/70">{detail}</p>
+                <p className="mt-4 text-xs uppercase tracking-wide text-white/50">Effective hourly rate</p><p className="mt-1 text-lg font-semibold text-[#EADCF0]">{rate === null ? 'Complete offer inputs' : `${money(rate)} / hour`}</p>
+                {isSelected && <p className="mt-3 border-t border-white/15 pt-3 text-xs leading-5 text-white/70">{decision === 'decline' ? 'This scenario does not assume replacement work, lost income, or other benefits.' : analysis.complete ? `Compared with your minimum offer of ${money(analysis.minimumOffer)}${monthlyIncomeTarget === null ? '' : ` and target offer of ${money(analysis.targetOffer)}`}.` : 'Complete the offer and workload inputs to compare this scenario.'}</p>}
+              </article>
+            })}
+          </div>
+          <div className="mt-4 rounded-xl border border-white/15 bg-white/[0.05] p-5" aria-live="polite"><p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#D9C6E3]">Selected scenario · {selectedDecision}</p><p className="mt-2 text-sm leading-6 text-white/80">{selectedDecision === 'decline' ? `Declining means this project contributes no offer income in this comparison. Based on your current average monthly income, ${monthlyPositionText.toLowerCase()}` : selectedDecision === 'negotiate' ? `Your proposed fee is compared with the same estimated ${analysis.complete ? analysis.totalHours.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—'} project hours. No scenario is saved to your profile.` : 'Accepting uses the offer amount entered above. Compare its contribution with the workload and your personal benchmarks; this tool does not make the decision for you.'}</p><div className="mt-4 grid gap-3 border-t border-white/15 pt-4 sm:grid-cols-3"><p className="text-xs text-white/60">Scenario fee<strong className="mt-1 block text-base text-white">{money(selectedScenarioAmount)}</strong></p><p className="text-xs text-white/60">Effective hourly<strong className="mt-1 block text-base text-white">{selectedScenarioRate === null ? '—' : `${money(selectedScenarioRate)} / hour`}</strong></p><p className="text-xs text-white/60">Vs. expense minimum<strong className={`mt-1 block text-base ${selectedScenarioDifference >= 0 ? 'text-[#EADCF0]' : 'text-rose-200'}`}>{analysis.complete ? `${selectedScenarioDifference >= 0 ? '+' : '−'}${money(Math.abs(selectedScenarioDifference))}` : '—'}</strong></p></div></div>
         </section>
 
         <section aria-label="Offer calculations" className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

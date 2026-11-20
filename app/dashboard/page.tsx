@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { formatCurrency, monthlyBurn, runwayMonths } from '@/lib/finance'
@@ -10,6 +10,7 @@ import LogoutButton from './LogoutButton'
 export default function DashboardPage() {
   const router = useRouter()
   const { data: account, error, isLoading } = useUserProfile()
+  const [insightOpen, setInsightOpen] = useState(false)
 
   useEffect(() => {
     if (isLoading || error) return
@@ -86,7 +87,7 @@ export default function DashboardPage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#54264F]">Your financial pulse</p>
             <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center">
               <div className="relative mx-auto size-40 shrink-0 sm:mx-0"><svg viewBox="0 0 100 100" className="size-full -rotate-90" role="img" aria-label={runway === null ? 'No monthly savings drawdown at current income and expenses' : `${runway.toFixed(1)} months of runway, shown on a twelve-month scale`}><circle cx="50" cy="50" r="42" fill="none" stroke="#E9DFF0" strokeWidth="8" /><circle cx="50" cy="50" r="42" fill="none" stroke="#54264F" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${runway === null ? 0 : Math.min(1, runway / 12) * 264} 264`} className="pulse-ring" /></svg><div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-3xl font-semibold text-[#54264F]">{runway === null ? '—' : runway.toFixed(1)}</span><span className="text-xs text-gray-500">{runway === null ? 'no drawdown' : 'months'}</span></div></div>
-              <div><h2 className="text-3xl sm:text-4xl">A clear view of today.</h2><p className="mt-3 max-w-xl text-sm leading-7 text-gray-600">{financialInsight}</p><p className="mt-3 text-xs leading-5 text-gray-500">Runway is based on current average monthly income, expenses, and savings—not your target income. A 12-month ring is capped at one year for scale.</p><Link href="/dashboard/runway" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#54264F] px-5 text-sm font-semibold text-white hover:bg-[#421E3E]">Explore your runway <span className="ml-2" aria-hidden="true">→</span></Link></div>
+              <div><h2 className="text-3xl sm:text-4xl">A clear view of today.</h2><p className="mt-3 max-w-xl text-sm leading-7 text-gray-600">{financialInsight}</p><button type="button" aria-expanded={insightOpen} onClick={() => setInsightOpen((open) => !open)} className="mt-3 min-h-10 rounded-full border border-[#54264F]/25 px-4 text-xs font-semibold text-[#54264F] hover:bg-[#F4F0F6]">{insightOpen ? 'Hide calculation' : 'How this is calculated'}</button>{insightOpen && <p className="mt-3 max-w-xl rounded-xl bg-[#F8F6F3] p-4 text-xs leading-6 text-gray-600">Monthly position = current average monthly income − monthly expenses. Runway is savings divided by the monthly shortfall when expenses exceed income; it is not based on your target income.</p>}<p className="mt-3 text-xs leading-5 text-gray-500">Runway is based on current average monthly income, expenses, and savings—not your target income. A 12-month ring is capped at one year for scale.</p><Link href="/dashboard/runway" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-[#54264F] px-5 text-sm font-semibold text-white hover:bg-[#421E3E]">Explore your runway <span className="ml-2" aria-hidden="true">→</span></Link></div>
             </div>
           </article>
           <article className="flex flex-col justify-between rounded-3xl bg-[#E9DFF0] p-6 sm:p-8"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#54264F]">Your next move</p><h2 className="mt-4 text-3xl">{nextAction.title}</h2><p className="mt-3 text-sm leading-7 text-[#574f60]">{nextAction.body}</p></div><Link href={nextAction.href} className="mt-7 inline-flex min-h-11 w-fit items-center rounded-full border border-[#54264F]/30 bg-white px-5 text-sm font-semibold text-[#54264F] hover:bg-[#F8F6F3]">{nextAction.action}<span className="ml-2" aria-hidden="true">→</span></Link></article>

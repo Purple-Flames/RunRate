@@ -39,6 +39,15 @@ body {
 }
 
 main { animation: page-enter 460ms cubic-bezier(.2,.7,.2,1) both; }
+.scroll-reveal { opacity: 0; transform: translate3d(0, 22px, 0); transition: opacity 650ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms), transform 650ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms); }
+.scroll-reveal.is-visible { opacity: 1; transform: translate3d(0, 0, 0); }
+main img.scroll-reveal { transform: scale(1.035); clip-path: inset(2% 2% 2% 2% round 1.25rem); transition: opacity 700ms ease var(--reveal-delay, 0ms), transform 900ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms), clip-path 900ms cubic-bezier(.2,.7,.2,1) var(--reveal-delay, 0ms); }
+main img.scroll-reveal.is-visible { transform: scale(1); clip-path: inset(0 0 0 0 round 1.25rem); }
+.feature-card { perspective: 1200px; }
+.feature-card-inner { display: grid; min-height: 100%; transform-style: preserve-3d; transition: transform 650ms cubic-bezier(.2,.7,.2,1); }
+.feature-card-inner.is-flipped { transform: rotateY(180deg); }
+.feature-card-face { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.feature-card-back { transform: rotateY(180deg); }
 h1, h2, h3, h4, .font-display {
   font-family: var(--font-display), Georgia, serif;
   font-weight: 500;

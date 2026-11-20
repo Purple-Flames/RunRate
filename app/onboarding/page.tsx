@@ -132,7 +132,7 @@ export default function OnboardingPage() {
         <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-400">Your saved categories and financial figures are prefilled when editing. Saving updates these profile fields without changing your sign-in method.</p>
         <div className="mt-8 max-w-xl" aria-label={`Step ${step} of 2`}><div className="flex items-center gap-3"><span className={`grid size-8 place-items-center rounded-full text-sm font-bold ${step === 1 ? 'bg-[#54264F] text-white' : 'bg-[#E9DFF0] text-[#54264F]'}`}>1</span><span className="h-px flex-1 bg-[#E9E3E9]" /><span className={`grid size-8 place-items-center rounded-full text-sm font-bold ${step === 2 ? 'bg-[#54264F] text-white' : 'bg-[#E9DFF0] text-[#54264F]'}`}>2</span></div><div className="mt-2 flex justify-between text-xs text-gray-500"><span>Work profile</span><span>Financial baseline</span></div></div>
 
-        {step === 1 && <div className="mt-10 grid w-full gap-8 lg:grid-cols-2">
+        {step === 1 && <div key="work-profile" className="mt-10 grid w-full gap-8 animate-[page-enter_300ms_ease-out] lg:grid-cols-2">
           <fieldset className="min-w-0">
             <legend className="text-sm font-bold">Freelancer category</legend>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -168,7 +168,7 @@ export default function OnboardingPage() {
           </div>
         </div>}
 
-        {step === 2 && <>
+        {step === 2 && <div key="financial-baseline" className="animate-[page-enter_300ms_ease-out]">
         <div className="mt-8 grid w-full gap-6 sm:grid-cols-2">
           <FinancialInput id="expenses" label="Monthly expenses" value={expenses} onChange={setExpenses} currency={currency} />
           <FinancialInput id="savings" label="Current savings" value={savings} onChange={setSavings} currency={currency} />
@@ -177,7 +177,7 @@ export default function OnboardingPage() {
           <FinancialInput id="income" label="Current Average Monthly Income" help="How much do you currently earn on average each month?" value={income} onChange={setIncome} currency={currency} />
           <FinancialInput id="target-income" label="Target Monthly Income" help="How much would you like to earn each month?" value={targetIncome} onChange={setTargetIncome} currency={currency} />
         </div>
-        </>}
+        </div>}
 
         {formError && <p role="alert" className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">{formError}</p>}
         <div className="mt-8 flex w-full flex-col-reverse justify-between gap-3 sm:flex-row">

@@ -120,7 +120,7 @@ export default function Home() {
           </nav>
 
           {menuOpen && (
-            <div id="homepage-mobile-menu" className="sm:hidden border-t border-[#E8E3ED] py-5 space-y-4">
+            <div id="homepage-mobile-menu" className="animate-[page-enter_220ms_ease-out] sm:hidden border-t border-[#E8E3ED] py-5 space-y-4">
               <a href="#features" onClick={() => setMenuOpen(false)} className="block text-neutral-300">
                 Features
               </a>
@@ -241,13 +241,20 @@ export default function Home() {
 
           <div className="grid gap-4 md:grid-cols-3">
             {landingFeatures.map((feature, index) => (
-              <article key={feature.title} className={`rounded-2xl border border-[#E8E3ED] p-7 text-left transition-all duration-300 ${index === 1 ? 'bg-[#E9DFF0]' : 'bg-white'} ${flippedFeature === index ? 'ring-2 ring-[#54264F]/30' : 'hover:-translate-y-1'}`}>
-                <p className="text-sm font-semibold tracking-[0.18em] text-[#54264F]">{feature.number} <span aria-hidden="true">/</span> RUNRATE TOOLS</p>
-                <h3 className="mt-8 text-2xl font-semibold">{feature.title}</h3>
-                <p className="mt-3 min-h-12 text-sm leading-6 text-neutral-500">{flippedFeature === index ? feature.detail : feature.summary}</p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <button type="button" onClick={() => setFlippedFeature(flippedFeature === index ? null : index)} aria-expanded={flippedFeature === index} className="min-h-11 rounded-full border border-[#54264F]/40 px-4 text-sm font-semibold text-[#54264F] hover:bg-white/70">{flippedFeature === index ? 'Show overview' : 'Flip for details'}</button>
-                  {flippedFeature === index && <button type="button" onClick={() => setActiveFeature(index)} className="min-h-11 rounded-full bg-[#54264F] px-4 text-sm font-semibold text-white hover:bg-[#421E3E]">Interactive preview</button>}
+              <article key={feature.title} className={`feature-card min-h-72 rounded-2xl border border-[#E8E3ED] p-6 text-left ${index === 1 ? 'bg-[#E9DFF0]' : 'bg-white'}`}>
+                <div className={`feature-card-inner ${flippedFeature === index ? 'is-flipped' : ''}`}>
+                  <div className="feature-card-face flex flex-col">
+                    <p className="text-sm font-semibold tracking-[0.18em] text-[#54264F]">{feature.number} <span aria-hidden="true">/</span> RUNRATE TOOLS</p>
+                    <h3 className="mt-8 text-2xl font-semibold">{feature.title}</h3>
+                    <p className="mt-3 min-h-12 text-sm leading-6 text-neutral-500">{feature.summary}</p>
+                    <button type="button" onClick={() => setFlippedFeature(flippedFeature === index ? null : index)} aria-expanded={flippedFeature === index} className="mt-auto min-h-11 w-fit rounded-full border border-[#54264F]/40 px-4 text-sm font-semibold text-[#54264F] hover:bg-white/70">Discover the tool <span aria-hidden="true">↗</span></button>
+                  </div>
+                  <div className="feature-card-face feature-card-back flex flex-col" aria-hidden={flippedFeature !== index}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#54264F]">A closer look</p>
+                    <h3 className="mt-5 text-2xl font-semibold">{feature.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-neutral-500">{feature.detail}</p>
+                    <div className="mt-auto flex flex-wrap gap-2 pt-5"><button type="button" onClick={() => setFlippedFeature(null)} className="min-h-11 rounded-full border border-[#54264F]/40 px-4 text-sm font-semibold text-[#54264F]">Back</button><button type="button" onClick={() => setActiveFeature(index)} className="min-h-11 rounded-full bg-[#54264F] px-4 text-sm font-semibold text-white">More details</button></div>
+                  </div>
                 </div>
               </article>
             ))}
