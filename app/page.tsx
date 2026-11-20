@@ -38,8 +38,16 @@ function PreviewInput({ label, id, value, onChange, currency }: { label: string;
   return <div><label htmlFor={id} className="block text-xs font-semibold leading-5 text-[#625b6b]">{label} ({currency})</label><input id={id} type="number" min="0" step="0.01" inputMode="decimal" value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-[#E8E3E9] bg-[#F8F6F3] px-3 text-sm text-[#29252A]" placeholder="Enter amount" /></div>
 }
 
+const landingFeatures = [
+  { number: '01', title: 'Financial Runway', summary: 'See how current income, monthly expenses, and savings shape your runway.', detail: 'Adjust your monthly numbers in a private what-if studio. Watch the savings projection respond as your income or costs change.', route: '/login', action: 'Explore runway' },
+  { number: '02', title: 'Rate Calculator', summary: 'Find a minimum and target-based hourly rate from your own numbers and billable hours.', detail: 'Set a realistic monthly billable-hours target and instantly compare your expense floor with the rate that supports your goals.', route: '/login', action: 'Explore rate planning' },
+  { number: '03', title: 'Offer Analysis', summary: 'Compare a client offer with the time, expenses, and income goal behind the work.', detail: 'Translate project duration and workload into an effective hourly rate, then compare the offer with your minimum and target.', route: '/login', action: 'Explore offer analysis' },
+]
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [flippedFeature, setFlippedFeature] = useState<number | null>(null);
+  const [activeFeature, setActiveFeature] = useState<number | null>(null);
 
   return (
     <main className="min-h-screen bg-[#FFFFFF] text-[#29252A] overflow-x-hidden">
@@ -113,10 +121,10 @@ export default function Home() {
 
           {menuOpen && (
             <div id="homepage-mobile-menu" className="sm:hidden border-t border-[#E8E3ED] py-5 space-y-4">
-              <a href="#features" className="block text-neutral-300">
+              <a href="#features" onClick={() => setMenuOpen(false)} className="block text-neutral-300">
                 Features
               </a>
-              <a href="#how-it-works" className="block text-neutral-300">
+              <a href="#how-it-works" onClick={() => setMenuOpen(false)} className="block text-neutral-300">
                 How It Works
               </a>
               <a href="#resources-heading" onClick={() => setMenuOpen(false)} className="block text-neutral-300">
@@ -232,20 +240,31 @@ export default function Home() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {[
-              ["01", "Financial Runway", "See how current income, monthly expenses, and savings shape your runway."],
-              ["02", "Rate Calculator", "Find a minimum and target-based hourly rate from your own numbers and billable hours."],
-              ["03", "Offer Analysis", "Compare a client offer with the time, expenses, and income goal behind the work."],
-            ].map(([icon, title, text], index) => (
-              <article key={title} className={`rounded-2xl border border-[#E8E3ED] p-7 text-left transition-transform hover:-translate-y-1 ${index === 1 ? 'bg-[#E9DFF0]' : 'bg-white'}`}>
-                <p className="text-sm font-semibold tracking-[0.18em] text-[#54264F]">{icon} <span aria-hidden="true">/</span> RUNRATE TOOLS</p>
-                <h3 className="mt-8 text-2xl font-semibold">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-neutral-500">{text}</p>
+            {landingFeatures.map((feature, index) => (
+              <article key={feature.title} className={`rounded-2xl border border-[#E8E3ED] p-7 text-left transition-all duration-300 ${index === 1 ? 'bg-[#E9DFF0]' : 'bg-white'} ${flippedFeature === index ? 'ring-2 ring-[#54264F]/30' : 'hover:-translate-y-1'}`}>
+                <p className="text-sm font-semibold tracking-[0.18em] text-[#54264F]">{feature.number} <span aria-hidden="true">/</span> RUNRATE TOOLS</p>
+                <h3 className="mt-8 text-2xl font-semibold">{feature.title}</h3>
+                <p className="mt-3 min-h-12 text-sm leading-6 text-neutral-500">{flippedFeature === index ? feature.detail : feature.summary}</p>
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <button type="button" onClick={() => setFlippedFeature(flippedFeature === index ? null : index)} aria-expanded={flippedFeature === index} className="min-h-11 rounded-full border border-[#54264F]/40 px-4 text-sm font-semibold text-[#54264F] hover:bg-white/70">{flippedFeature === index ? 'Show overview' : 'Flip for details'}</button>
+                  {flippedFeature === index && <button type="button" onClick={() => setActiveFeature(index)} className="min-h-11 rounded-full bg-[#54264F] px-4 text-sm font-semibold text-white hover:bg-[#421E3E]">Interactive preview</button>}
+                </div>
               </article>
             ))}
           </div>
         </div>
       </section>
+
+      {activeFeature !== null && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-[#29252A]/45 p-0 backdrop-blur-sm sm:items-center sm:p-6" onClick={() => setActiveFeature(null)}>
+          <section role="dialog" aria-modal="true" aria-labelledby="feature-preview-title" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => { if (event.key === 'Escape') setActiveFeature(null) }} tabIndex={-1} className="w-full max-w-lg animate-[page-enter_220ms_ease-out] rounded-t-3xl border border-[#E8E3ED] bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8">
+            <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#54264F]">RunRate tool preview</p><h2 id="feature-preview-title" className="mt-2 text-3xl">{landingFeatures[activeFeature].title}</h2></div><button type="button" autoFocus onClick={() => setActiveFeature(null)} aria-label="Close preview" className="grid size-11 shrink-0 place-items-center rounded-full border border-[#E8E3ED] text-xl text-[#54264F] hover:bg-[#F4F0F6]">×</button></div>
+            <p className="mt-4 text-sm leading-7 text-[#625b6b]">{landingFeatures[activeFeature].detail}</p>
+            <div className="mt-6 rounded-2xl bg-[#F4F0F6] p-5"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#54264F]">Designed around your real numbers</p><p className="mt-2 text-sm leading-6 text-[#625b6b]">Your profile stays yours. Explore assumptions before saving anything, and see how each decision affects your financial picture.</p></div>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"><button type="button" onClick={() => setActiveFeature(null)} className="min-h-11 rounded-lg border border-[#E8E3ED] px-5 text-sm font-semibold text-[#54264F]">Keep exploring</button><Link href={landingFeatures[activeFeature].route} className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#54264F] px-5 text-sm font-semibold text-white hover:bg-[#421E3E]">{landingFeatures[activeFeature].action}</Link></div>
+          </section>
+        </div>
+      )}
 
       {/* How It Works */}
       <section id="how-it-works" className="border-b border-[#E8E3ED]">

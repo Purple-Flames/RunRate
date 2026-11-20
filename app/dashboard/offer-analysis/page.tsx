@@ -27,6 +27,7 @@ export default function OfferAnalysisPage() {
   const [daysPerWeek, setDaysPerWeek] = useState('')
   const [duration, setDuration] = useState('')
   const [durationUnit, setDurationUnit] = useState<DurationUnit>('weeks')
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   useEffect(() => {
     if (isLoading || profileError) return
@@ -172,8 +173,18 @@ export default function OfferAnalysisPage() {
             <ComparisonCard label="Minimum viable offer" amount={analysis.minimumOffer} difference={analysis.minimumDifference} complete={analysis.complete} money={money} />
             <ComparisonCard label="Target offer" amount={analysis.targetOffer} difference={analysis.targetDifference} complete={analysis.complete} money={money} />
           </div>
-          <p className="mt-6 text-sm leading-7 text-gray-300">{recommendation}</p>
-        </section>
+            <div className="mt-7 grid gap-4 rounded-xl bg-[#F8F6F3] p-5" aria-label="Offer benchmark comparison">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#54264F]">Offer against your benchmarks</p>
+              {[['Client offer', analysis.offer], ['Minimum viable', analysis.minimumOffer], ['Income target', analysis.targetOffer]].map(([label, amount]) => {
+                const numericAmount = Number(amount)
+                const scale = Math.max(analysis.offer, analysis.minimumOffer, analysis.targetOffer, 1)
+                return <div key={String(label)}><div className="mb-1 flex justify-between gap-3 text-xs"><span className="text-[#625b6b]">{label}</span><span className="font-semibold text-[#29252A]">{analysis.complete ? money(numericAmount) : '—'}</span></div><div className="h-2 overflow-hidden rounded-full bg-white"><div className="h-full rounded-full bg-[#54264F] transition-[width] duration-500" style={{ width: `${analysis.complete ? Math.max(0, Math.min(100, numericAmount / scale * 100)) : 0}%` }} /></div></div>
+              })}
+            </div>
+            <p className="mt-6 text-sm leading-7 text-gray-500">{recommendation}</p>
+            <button type="button" onClick={() => setShowBreakdown((current) => !current)} aria-expanded={showBreakdown} aria-controls="offer-method" className="mt-4 min-h-11 rounded-full border border-[#54264F]/35 px-4 text-sm font-semibold text-[#54264F] hover:bg-[#F4F0F6]">{showBreakdown ? 'Hide calculation notes' : 'How we compare this offer'}</button>
+            {showBreakdown && <div id="offer-method" className="mt-4 rounded-xl border border-[#E8E3ED] bg-[#F8F6F3] p-5 text-sm leading-6 text-[#625b6b]"><p><strong className="text-[#29252A]">Project time:</strong> daily hours × work days per week × duration, converted to consistent weeks.</p><p className="mt-2"><strong className="text-[#29252A]">Minimum:</strong> monthly expenses prorated across the project period. <strong className="text-[#29252A]">Target:</strong> your saved target income prorated over that same period.</p><p className="mt-2">The chart compares the full client offer with those two benchmarks. It is a planning estimate, not tax or legal advice.</p></div>}
+          </section>
 
         <section className="mt-6 rounded-2xl border border-[#E8E3ED] bg-[#FFFFFF] p-6 sm:p-8">
           <h2 className="text-xl font-bold">Runway effect, separate from profitability</h2>

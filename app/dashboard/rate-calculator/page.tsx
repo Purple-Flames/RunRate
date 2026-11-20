@@ -77,6 +77,12 @@ export default function RateCalculatorPage() {
           </div>
         </section>
 
+        <section aria-labelledby="hours-scenario-title" className="mt-5 rounded-2xl border border-[#E8E3ED] bg-[#F4F0F6] p-6 sm:p-8">
+          <div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#54264F]">Billable-hours studio</p><h2 id="hours-scenario-title" className="mt-2 text-2xl">Explore a realistic month.</h2><p className="mt-2 text-sm leading-6 text-[#625b6b]">Move the slider or choose a work rhythm. Your suggested hourly rate updates as you explore.</p></div><p className="text-2xl font-semibold text-[#54264F]" aria-live="polite">{hours && Number(hours) >= 1 && Number(hours) <= 744 ? Number(hours) : '—'} <span className="text-sm font-normal">hours / month</span></p></div>
+          <label htmlFor="billable-hours-range" className="sr-only">Billable hours per month slider</label><input id="billable-hours-range" type="range" min="1" max="744" step="1" value={Math.max(1, Math.min(744, Number(hours) || 1))} onChange={(event) => setHours(event.target.value)} className="mt-6 w-full accent-[#54264F]" aria-valuetext={`${hours || 1} billable hours per month`} />
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Common monthly work rhythms">{[60, 80, 100, 120].map((preset) => <button key={preset} type="button" onClick={() => setHours(String(preset))} aria-pressed={Number(hours) === preset} className={`min-h-11 rounded-full border px-4 text-sm font-semibold transition-colors ${Number(hours) === preset ? 'border-[#54264F] bg-[#54264F] text-white' : 'border-[#54264F]/30 bg-white text-[#54264F] hover:bg-[#E9DFF0]'}`}>{preset} hours</button>)}</div>
+        </section>
+
         {targetMissing && <p role="status" className="mt-4 rounded-lg border border-[#54264F]/50 bg-[#F4F0F6] p-4 text-sm leading-6 text-gray-200">Your Target Monthly Income is not set. Add it in <Link href="/onboarding" className="font-semibold text-[#54264F] underline">Edit Profile</Link> before using a target-based suggested rate. The minimum hourly rate below still uses monthly expenses and billable hours.</p>}
         {!targetMissing && normalizedTarget < monthlyExpenses && <p className="mt-4 rounded-lg border border-amber-900 bg-amber-950/30 p-4 text-sm text-amber-200">Your target is below monthly expenses. The suggested rate uses expenses as the minimum monthly revenue floor.</p>}
 
